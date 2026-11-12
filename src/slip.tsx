@@ -165,7 +165,7 @@ export function SlipBody() {
 }
 
 export function SlipFooter() {
-  const { slip, balance, pref, placing, place, removeDead, set, receipts } = useApp()
+  const { slip, balance, pref, placing, place, removeDead, set, receipts, user, login } = useApp()
   const sels = useBook((s) => s.sels)
   const mkts = useBook((s) => s.mkts)
   const [open, setOpen] = useState(false)
@@ -196,6 +196,8 @@ export function SlipFooter() {
   } else if (dead) { dis = false; run = removeDead; label = dead > 1 ? `Remove ${dead} closed selections` : 'Remove closed selection' }
   else if (slip.length && sus === slip.length) label = 'Waiting for the market to reopen'
   if (!slip.length && receipts.length) label = 'Bet placed'
+  // bets belong to an account: logged out, the one button offers the way back in
+  if (!user && slip.length) { label = 'Log in to place bets'; dis = false; run = login }
   const prefs = { ask: 'Ask me', better: 'Accept better prices', any: 'Accept any' } as const
   return (
     <div className="pf">
@@ -222,7 +224,7 @@ export function SlipFooter() {
             </span>
           )}
         </span>
-        <span>Demo balance <b className="d"><Price value={balance} /></b></span>
+        {user ? <span>Demo balance <b className="d"><Price value={balance} /></b></span> : <span>Logged out</span>}
       </div>
       <div className="fine">Sample data · no real money</div>
     </div>
@@ -273,7 +275,7 @@ function CashOut({ bet, onLock }: { bet: Bet; onLock: (v: number | null, solid?:
     return (
       <div className="co-wrap locked">
         <div className="co-row">
-          <button className="co go" onClick={confirm}><Lock size={14} weight="fill" /> Confirm {money(lock.v)}</button>
+          <button className="co go" onClick={confirm}><Lock size={14} weight="fill" /> Confirm <span className="d co-v"><Usdt />{money(lock.v)}</span></button>
           <button className="co x" aria-label="Release the held price" onClick={() => release('')}><X size={16} /></button>
         </div>
         <div className="drain"><i /></div>
@@ -293,7 +295,7 @@ function CashOut({ bet, onLock }: { bet: Bet; onLock: (v: number | null, solid?:
           timer.current = window.setTimeout(() => release(`Quote expired · ${fresh(value)}`), 5000)
         }}
       >
-        <span>Cash out</span><span className="d"><Price value={value} dir={-sel.dir} /></span>
+        <span>Cash out</span><span className="d co-v"><Usdt /><Price value={value} dir={-sel.dir} /></span>
       </button>
       <span className={cx('meta', note && 'note')}>{note || `${diff >= 0 ? '+' : '−'}${money(Math.abs(diff))} vs stake`}</span>
     </div>
@@ -323,10 +325,10 @@ export function OpenBet({ bet, wide }: { bet: Bet; wide?: boolean }) {
   const valueBox = !offered && !cashed ? (
     <div className="val"><b className="d">{fmt(bet.odds)}</b><div className="meta">odds taken</div></div>
   ) : cashed ? (
-    <div className="val"><b className="d">{money(bet.returns)}</b><div className="meta up">Cashed out</div></div>
+    <div className="val"><b className="d"><Usdt />{money(bet.returns)}</b><div className="meta up">Cashed out</div></div>
   ) : (
     <div className="val">
-      <b className="d">{level ? <Lock size={14} weight="fill" className="lk" /> : <Wake dir={-sel.dir} at={sel.movedAt} />}{level ? money(level.v) : <Price value={value} dir={-sel.dir} />}</b>
+      <b className="d">{level ? <Lock size={14} weight="fill" className="lk" /> : <Wake dir={-sel.dir} at={sel.movedAt} />}<Usdt />{level ? money(level.v) : <Price value={value} dir={-sel.dir} />}</b>
       <div className="meta">cash-out value</div>
     </div>
   )

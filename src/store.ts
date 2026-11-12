@@ -66,7 +66,9 @@ type App = {
   pref: Pref; balance: number; bets: Bet[]; follow: string[]
   toasts: Toast[]; panelTab: 'slip' | 'bets' | 'chat'; sheet: null | 'slip' | 'bets' | 'chat'; menu: boolean; scenes: boolean; search: boolean
   failNext: boolean; declineCash: boolean; failIdx: number
-  user: null | { alias: string }; profile: boolean; card: string | null
+  user: null | { alias: string }; profile: boolean; card: string | null; wallet: boolean
+  stash: null | { bets: Bet[]; balance: number }
+  logout: () => void
   sf: Record<string, { tab: string; comp: string }>; matchTab: string | null
   setSF: (sport: string, p: Partial<{ tab: string; comp: string }>) => void
   login: () => void
@@ -88,12 +90,21 @@ export const useApp = create<App>((set, get) => ({
   slip: [], receipts: [], placing: null, pref: 'better', balance: 1000, bets: seedBets, follow: ['c:pl', 't:ars'],
   toasts: [], panelTab: 'slip', sheet: null, menu: false, scenes: false, search: false,
   failNext: false, declineCash: false, failIdx: 0,
-  user: null, profile: false, card: null,
+  user: { alias: 'wave_rider_52' }, profile: false, card: null, wallet: false, stash: null,
   sf: {}, matchTab: null,
   setSF: (sport, p) => set({ sf: { ...get().sf, [sport]: { ...(get().sf[sport] ?? { tab: 'now', comp: 'all' }), ...p } } }),
+  // the demo player: no password. Logging out puts the account's bets and balance away; logging in brings them back.
   login: () => {
-    if (!get().user) set({ user: { alias: 'wave_rider_52' } }) // the profile header says it is a demo player; no toast over it
-    set({ profile: true, menu: false, sheet: null })
+    const st = get()
+    if (st.user) return
+    set({ user: { alias: 'wave_rider_52' }, bets: st.stash?.bets ?? st.bets, balance: st.stash?.balance ?? st.balance, stash: null, menu: false })
+    get().toast('Signed in as wave_rider_52, the demo player. No password needed in this prototype.')
+  },
+  logout: () => {
+    const st = get()
+    if (!st.user) return
+    set({ user: null, stash: { bets: st.bets, balance: st.balance }, bets: [], slip: st.slip.map((i) => ({ ...i, err: undefined })), receipts: [], wallet: false, card: null, profile: false, sheet: null, menu: false })
+    get().toast('Logged out. Your demo bets and balance are kept for when you log back in.')
   },
   set: (p) => set(p),
   toast: (text, action) => {

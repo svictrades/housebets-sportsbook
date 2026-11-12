@@ -1,11 +1,11 @@
 // Your bets, live: a strip that rotates through the matches you have open bets on,
 // and a ticket-style bet card that opens from any bet (open, settled or just placed).
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowRight, Check, Copy, Lock, X } from '@phosphor-icons/react'
+import { ArrowRight, CaretRight, Check, Copy, Lock, X } from '@phosphor-icons/react'
 import { useLocation } from 'wouter'
 import { fmt, money, useBook } from './book'
 import { Bet, cashValue, minuteLabel, useApp } from './store'
-import { TEAMS } from './data'
+import { COMPS, TEAMS } from './data'
 import { Crest, cx, LiveDot, Plate, Tideline, Usdt, WaveMark } from './ui'
 
 const useLiveBets = () => {
@@ -45,23 +45,29 @@ export function BetStrip() {
   const sus = mkts[sel.mk].sus
   return (
     <div className="strip" onMouseEnter={() => setHold(true)} onMouseLeave={() => setHold(false)}>
+      <div className="sp-lab">
+        <span className="micro">Your bets live</span>
+        {live.length > 1 && (
+          <span className="strip-n" role="tablist" aria-label="Your live bets">
+            {live.map((b, k) => <button key={b.id} role="tab" aria-selected={k === idx} aria-label={`${b.sel}, ${b.match}`} className={cx(k === idx && 'on', k === idx && !hold && hot < 0 && 'run')} onClick={() => setI(k)}><i /></button>)}
+          </span>
+        )}
+      </div>
       <button className="strip-b" onClick={() => set({ card: bet.id })} aria-label={`Your bet on ${bet.match}. Open bet card`}>
-        <span className="micro lab">Your bets live</span>
         <span key={bet.id} className="strip-in">
-          <span className="st-m"><LiveDot /><span className="d">{minuteLabel(m)}</span></span>
-          <span className="st-t"><Crest id={m.fx.home} size={16} /><b>{TEAMS[m.fx.home].short}</b><Plate m={m} /><b>{TEAMS[m.fx.away].short}</b><Crest id={m.fx.away} size={16} /></span>
-          <span className="st-s"><span className="meta">Your bet</span><b>{bet.sel}</b><span className="d meta">@ {fmt(bet.odds)}</span></span>
-          <span className="st-l"><Tideline pts={valuePts(bet, sel.hist)} h={22} x0={bet.placedX} xNow={m.x} gaps={m.gaps} end={-sel.dir} minSpan={bet.stake * 0.08} /></span>
-          {sus ? <span className="st-v sus"><Lock size={14} /> {sus.reason}</span> : (
-            <span className="st-v"><span className="meta">Cash out</span><b className="d"><Usdt />{money(value)}</b><em className={cx('pc', diff >= 0 ? 'u' : 'dn')}>{diff >= 0 ? '+' : '−'}{money(Math.abs(diff))}</em></span>
+          <span className="sp-c c-match">
+            <small><LiveDot /><span className="d">{minuteLabel(m)}</span><span className="cmp"> · {COMPS[m.fx.comp].name}</span></small>
+            <span className="st-t"><Crest id={m.fx.home} size={16} /><b>{TEAMS[m.fx.home].short}</b><Plate m={m} /><b>{TEAMS[m.fx.away].short}</b><Crest id={m.fx.away} size={16} /></span>
+          </span>
+          <span className="sp-c c-sel"><small>Your bet</small><b>{bet.sel} <span className="d at">@ {fmt(bet.odds)}</span></b></span>
+          <span className="sp-c c-stake"><small>Stake</small><b className="d"><Usdt />{money(bet.stake)}</b></span>
+          <span className="st-l"><Tideline pts={valuePts(bet, sel.hist)} h={26} x0={bet.placedX} xNow={m.x} gaps={m.gaps} end={-sel.dir} minSpan={bet.stake * 0.08} /></span>
+          {sus ? <span className="sp-c c-cash sus"><small>Cash out paused</small><b><Lock size={14} /> {sus.reason}</b></span> : (
+            <span className="sp-c c-cash"><small>Cash out now</small><b className="d"><Usdt />{money(value)}<em className={cx('pc', diff >= 0 ? 'u' : 'dn')}>{diff >= 0 ? '+' : '−'}{money(Math.abs(diff))}</em></b></span>
           )}
         </span>
+        <CaretRight className="sp-go" size={14} />
       </button>
-      {live.length > 1 && (
-        <span className="strip-n" role="tablist" aria-label="Your live bets">
-          {live.map((b, k) => <button key={b.id} role="tab" aria-selected={k === idx} aria-label={`${b.sel}, ${b.match}`} className={cx(k === idx && 'on', k === idx && !hold && hot < 0 && 'run')} onClick={() => setI(k)}><i /></button>)}
-        </span>
-      )}
     </div>
   )
 }

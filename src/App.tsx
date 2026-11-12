@@ -5,7 +5,8 @@ import { suspendMarket, suspendMatch, tick, useBook, scoreGoal, shorten } from '
 import { useApp } from './store'
 import { Bets, SportPage, Home, Live } from './pages'
 import { Match } from './match'
-import { Profile } from './profile'
+import { Stats } from './stats'
+import { Wallet } from './account'
 import { BetCard, BetStrip } from './betcard'
 import type { Sport } from './data'
 import { MenuSheet, Panel, PhoneHeader, Rail, ScenesPop, SearchOverlay, Sheet, SlipBar, TabBar, Toasts, TopBar, useShell } from './shell'
@@ -31,6 +32,7 @@ function Frame() {
       <Route path="/sport/:id">{(p) => (['tennis', 'basketball', 'esports'].includes(p.id) ? <SportPage key={p.id} sport={p.id as Sport} /> : <SportPage sport="football" />)}</Route>
       <Route path="/match/:id">{(p) => <Match key={p.id} id={p.id} />}</Route>
       <Route path="/bets" component={Bets} />
+      <Route path="/stats" component={Stats} />
       <Route><Home /></Route>
     </Switch>
   )
@@ -44,7 +46,7 @@ function Frame() {
         <Sheet />
         <MenuSheet />
         <TabBar />
-        <Profile />
+        <Wallet />
         <BetCard />
         <SearchOverlay />
         <ScenesPop />
@@ -58,7 +60,7 @@ function Frame() {
       <div className="maincol"><BetStrip /><main ref={main} className="main"><div key={loc} className="fade">{routes}</div></main></div>
       <Panel />
       <ScenesPop />
-      <Profile />
+      <Wallet />
       <BetCard />
       <SearchOverlay />
       <Toasts />
@@ -86,7 +88,9 @@ export function App() {
     if (scene === 'card') timers.push(setTimeout(() => useApp.getState().set({ card: 'HB-4T8KD' }), 400))
     if (scene === 'cardwon') timers.push(setTimeout(() => useApp.getState().set({ card: useApp.getState().bets.find((b) => b.status === 'won')?.id ?? null }), 400))
     if (scene === 'cardlost') timers.push(setTimeout(() => useApp.getState().set({ card: useApp.getState().bets.find((b) => b.status === 'lost')?.id ?? null }), 400))
-    if (scene === 'profile') timers.push(setTimeout(() => useApp.getState().login(), 400))
+    if (scene === 'profile' || scene === 'stats') window.location.hash = '#/stats'
+    if (scene === 'wallet') timers.push(setTimeout(() => useApp.getState().set({ wallet: true }), 400))
+    if (scene === 'loggedout') useApp.getState().logout()
     if (scene === 'slip') timers.push(setTimeout(() => {
       const a = useApp.getState()
       a.toggle('ars-bha:main:h'); a.toggle('liv-mun:main:d')

@@ -14,9 +14,9 @@ https://svictrades.github.io/housebets-sportsbook/ (no login). Phone-sized previ
 
 ## Routes
 
-`#/` Sports home · `#/live` Live · `#/football` Football · `#/match/ars-bha` Match page · `#/bets` Bet slip + My bets
+`#/` Sports home · `#/live` Live · `#/football` Football · `#/match/ars-bha` Match page · `#/bets` Bet slip + My bets · `#/stats` the signed-in player's statistics
 
-Reviewer shortcuts: **Demo controls** (bottom of the side panel, the `.` key, or the Menu tab on phones) triggers a goal, a penalty check, a price change, a suspension, a failed bet, a declined cash-out and a "nothing live" state. Deep links: `#/match/ars-bha?scene=goal`, `#/match/ars-bha?scene=slip`, `#/live?scene=lull`, `#/?scene=profile`, `#/?scene=demo`, `#/?rail=open`, `#/?panel=closed`. `phone-preview.html` shows the app in a 390px frame.
+Reviewer shortcuts: **Demo controls** (bottom of the side panel, the `.` key, or the Menu tab on phones) triggers a goal, a penalty check, a price change, a suspension, a failed bet, a declined cash-out and a "nothing live" state. Deep links: `#/match/ars-bha?scene=goal`, `#/match/ars-bha?scene=slip`, `#/live?scene=lull`, `#/stats`, `#/?scene=wallet`, `#/?scene=loggedout`, `#/bets?scene=card`, `#/?scene=demo`, `#/?rail=open`, `#/?panel=closed`. `phone-preview.html` shows the app in a 390px frame.
 
 ## Credits
 

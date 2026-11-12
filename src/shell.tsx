@@ -2,7 +2,7 @@
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Basketball, CaretDown, CaretUp, ChatCircle, Crown, GameController, House, List, MagnifyingGlass, Broadcast, Receipt, Sidebar, SidebarSimple,
-  SoccerBall, Spade, Star, TennisBall, Trophy, X, Play, UserCircle, SlidersHorizontal,
+  SoccerBall, Spade, Star, TennisBall, Trophy, X, Play, UserCircle, SlidersHorizontal, ChartLineUp, SignIn, SignOut,
 } from '@phosphor-icons/react'
 import { create } from 'zustand'
 import { Link, useLocation } from 'wouter'
@@ -11,6 +11,7 @@ import { useApp, needsAccept, stakeState, matchName, minuteLabel, isDead } from 
 import { COMPS, FIXTURES, PLAYERS, TEAMS } from './data'
 import { useGo, cx, OddsCell, useIsPhone, useTabBar, Crest, LiveDot, Tideline, Usdt, valueAt } from './ui'
 import { MyBets, SlipBody, SlipFooter } from './slip'
+import { AccountMenu, BalanceButton } from './account'
 
 // shell layout state: the left menu (icons or icons with labels) and the side panel (open or closed)
 export const useShell = create<{ rail: boolean; panel: boolean }>(() => ({ rail: false, panel: true }))
@@ -23,19 +24,23 @@ const openBetCount = () => useApp((s) => s.bets.filter((b) => b.status === 'open
 // The live pulse in the top bar: the biggest price move of the last ten minutes, one match at a time.
 // A suspended match jumps the queue, so the bar never sits on a quiet match while something is happening.
 export function TopBar() {
-  const { shellToast, set, login, user, balance } = useApp()
+  const { shellToast, set, login, user } = useApp()
   const slipN = useApp((s) => s.slip.length)
   const { rail, panel } = useShell()
   return (
-    <header className="top">
+    <header className={cx('top', user && 'in')}>
       <button className="tog" aria-label={rail ? 'Collapse menu' : 'Expand menu'} aria-expanded={rail} onClick={() => useShell.setState({ rail: !rail })}><SidebarSimple size={20} weight={rail ? 'fill' : 'regular'} /></button>
       <Link href="/" className="logo" aria-label="Housebets home"><img src="./brand/logo.svg" alt="Housebets" /></Link>
+      {/* signed in, the centre of the bar follows the live Housebets site: balance, Wallet, rewards, prize and position */}
       <div className="prizew">
+        {user && <BalanceButton />}
+        {user && <button className="btn pri wbtn" onPointerDown={(e) => e.stopPropagation()} onClick={() => set({ wallet: !useApp.getState().wallet })}>Wallet</button>}
+        <button className="ib crown" aria-label={user ? 'Rewards, 2 new' : 'Rewards'} onClick={shellToast}><Crown size={20} />{user && <u>2</u>}</button>
         <button className="prize" onClick={shellToast}>
-          <Trophy size={20} weight="fill" />
-          <span><small>Weekly Prize</small><b className="d">$50,000.00</b></span>
+          <Trophy size={22} weight="fill" />
+          <span><small>Weekly Prize</small><b className="d">$50,000<i>.00</i></b></span>
+          {user && <span className="pos"><small>Position</small><b className="d">1,284<i>th</i></b></span>}
         </button>
-        <button className="ib" aria-label="Rewards" onClick={shellToast}><Crown size={20} /></button>
       </div>
       <span className="grow" />
       <button className="ib" aria-label="Search" onClick={() => set({ search: true })}><MagnifyingGlass size={20} /></button>
@@ -43,11 +48,7 @@ export function TopBar() {
         <Sidebar size={20} weight={panel ? 'fill' : 'regular'} />
         {!panel && slipN > 0 && <u key={slipN} className="bump">{slipN}</u>}
       </button>
-      {user ? (
-        <button className="acct" onClick={() => set({ profile: true })} aria-label="Open your profile and statistics">
-          <span><small>{user.alias}</small><b className="d"><Usdt />{money(balance)}</b></span><Avatar alias={user.alias} />
-        </button>
-      ) : (
+      {user ? <AccountMenu /> : (
         <>
           <button className="btn" onClick={login}>Log In</button>
           <button className="btn pri" onClick={login}>Register</button>
@@ -81,6 +82,7 @@ export function Rail({ sport }: { sport: string | null }) {
       <hr />
       {item(<Star size={20} />, 'Following', false, () => goF('/football?tab=following'))}
       {item(<Receipt size={20} weight={w(loc === '/bets')} />, 'My bets', loc === '/bets', () => nav('/bets'), n > 0 && <u>{n}</u>)}
+      {item(<ChartLineUp size={20} weight={w(loc === '/stats')} />, 'Statistics', loc === '/stats', () => nav('/stats'))}
       <hr />
       {item(<Spade size={20} />, 'Casino', false, shellToast)}
       {item(<ChatCircle size={20} />, 'Chat', false, () => openPanel('chat'))}
@@ -141,14 +143,12 @@ export function Panel() {
 
 // ---- phone ------------------------------------------------------------------
 export function PhoneHeader() {
-  const { login, user, balance, set } = useApp()
+  const { login, user, set } = useApp()
   return (
     <header className="pt">
       <Link href="/" className="logo" aria-label="Housebets home"><img src="./brand/logo.svg" alt="Housebets" /></Link>
       <button className="ib" aria-label="Search" onClick={() => set({ search: true, menu: false, sheet: null })}><MagnifyingGlass size={20} /></button>
-      {user ? (
-        <button className="acct" onClick={() => set({ profile: true })} aria-label="Open your profile and statistics"><span><b className="d"><Usdt />{money(balance)}</b></span><Avatar alias={user.alias} /></button>
-      ) : (
+      {user ? <BalanceButton /> : (
         <>
           <button className="btn" onClick={login}>Log In</button>
           <button className="btn pri" onClick={login}>Register</button>
@@ -158,9 +158,9 @@ export function PhoneHeader() {
   )
 }
 export function TabBar() {
-  const { set, shellToast, menu, login, sheet, user, profile } = useApp()
-  const [, nav] = useLocation()
-  const at = profile ? 'profile' : menu ? 'menu' : sheet === 'chat' ? 'chat' : 'sports'
+  const { set, shellToast, menu, login, sheet, user } = useApp()
+  const [loc, nav] = useLocation()
+  const at = menu ? 'menu' : sheet === 'chat' ? 'chat' : loc === '/stats' ? 'profile' : 'sports'
   const cur = (id: string) => ({ className: cx(at === id && 'on'), 'aria-current': at === id ? ('page' as const) : undefined })
   return (
     <nav className="tb" aria-label="Main">
@@ -168,7 +168,7 @@ export function TabBar() {
       <button {...cur('sports')} onClick={() => { set({ menu: false, sheet: null }); nav('/') }}><SoccerBall size={22} weight={at === 'sports' ? 'fill' : 'regular'} />Sports</button>
       <button onClick={shellToast}><Spade size={22} />Casino</button>
       <button {...cur('chat')} onClick={() => set({ menu: false, sheet: sheet === 'chat' ? null : 'chat' })}><ChatCircle size={22} weight={at === 'chat' ? 'fill' : 'regular'} />Chat</button>
-      <button {...cur('profile')} onClick={login}>{user ? <Avatar alias={user.alias} /> : <UserCircle size={22} />}Profile</button>
+      <button {...cur('profile')} onClick={() => { set({ menu: false, sheet: null }); if (user) nav('/stats'); else login() }}>{user ? <Avatar alias={user.alias} /> : <UserCircle size={22} />}{user ? 'Stats' : 'Log in'}</button>
     </nav>
   )
 }
@@ -273,7 +273,8 @@ export function MenuSheet() {
           <div className="micro sub">You</div>
           <button className="mi" onClick={() => { set({ menu: false, sheet: 'bets' }) }}><Receipt size={20} /><span>My bets</span>{n > 0 && <em className="d">{n} open</em>}</button>
           <button className="mi" onClick={go('/football?tab=following')}><Star size={20} /><span>Following</span></button>
-          <button className="mi" onClick={() => useApp.getState().login()}><UserCircle size={20} /><span>Profile and statistics</span></button>
+          {mi(<ChartLineUp size={20} />, 'Statistics', '/stats')}
+          {useApp.getState().user ? <button className="mi" onClick={() => { useApp.getState().logout(); nav('/') }}><SignOut size={20} /><span>Log out</span></button> : <button className="mi" onClick={() => useApp.getState().login()}><SignIn size={20} /><span>Log in</span><em>demo player, no password</em></button>}
           <div className="micro sub">Prototype</div>
           <button className="mi" aria-expanded={demo} onClick={() => setDemo(!demo)}><SlidersHorizontal size={20} /><span>Demo controls</span><em>goals, suspensions, failed bets</em><CaretDown size={14} className={cx("cv", demo && "up")} /></button>
           {demo && <ScenesList onRun={() => set({ menu: false })} />}
@@ -363,7 +364,7 @@ export function ScenesPop() {
 export function Toasts() {
   const toasts = useApp((s) => s.toasts)
   // while a sheet, the menu or the profile is open, toasts move to the top so they never cover its buttons
-  const over = useApp((s) => !!s.sheet || s.menu || s.profile)
+  const over = useApp((s) => !!s.sheet || s.menu || s.wallet)
   return (
     <div className={cx('toasts', over && 'top')} role="status" aria-live="polite">
       {toasts.map((t) => (
