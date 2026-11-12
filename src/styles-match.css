@@ -1,0 +1,243 @@
+/* Match page, bet slip, My bets and profile. Loaded after styles.css; everything here is an override or a new rule. */
+
+/* ---------- match: breadcrumb row ---------- */
+.match .crumbs{margin-bottom:14px}
+.cr-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+.fm{height:40px;padding:0 14px;border-radius:8px;display:inline-flex;align-items:center;gap:8px;font:600 13px var(--body);color:var(--t2);box-shadow:inset 0 0 0 1px var(--line2);white-space:nowrap;transition:color .16s,box-shadow .16s,background .16s}
+.fm:hover{color:var(--t1);background:var(--hover);box-shadow:inset 0 0 0 1px var(--line3)}
+.fm.on{color:var(--gold)}
+.fm svg,.sb-star svg{animation:pop .3s var(--ease)}
+
+/* ---------- match: scoreboard (one band: crest and name, score, crest and name, live clock under the score) ---------- */
+.board{position:relative;padding:16px 0 22px;margin-bottom:16px;border-top:1px solid var(--line);border-bottom:1px solid var(--line2);background:radial-gradient(52% 130% at 50% 0%,rgba(2,248,248,.05),transparent 72%)}
+.board.live{background:radial-gradient(52% 130% at 50% 0%,rgba(2,248,248,.075),transparent 72%)}
+.sb-k{text-align:center;margin-bottom:16px}
+.sb{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;column-gap:40px}
+.sb-team{display:flex;align-items:center;gap:16px;min-width:0;height:84px}
+.sb-team.home{flex-direction:row-reverse}
+.sb-team .crest{flex:none}
+.sb-n{min-width:0;display:flex;align-items:center;gap:4px;position:relative}
+.home .sb-n{flex-direction:row-reverse}
+.sb-n .n{min-width:0;font:700 26px/34px var(--disp);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-n .ns{display:none}
+@media (max-width:1699px){.sb-n .nf{display:none}.sb-n .ns{display:inline}}
+.sb-star{width:32px;height:32px;display:grid;place-items:center;border-radius:8px;color:var(--t2);flex:none;position:relative;transition:color .16s,background .16s}
+.sb-star:hover{color:var(--t1);background:var(--hover)}
+.sb-star.on{color:var(--gold)}
+.sb-g{position:absolute;top:100%;left:0;right:0;margin-top:1px;display:flex;align-items:center;gap:8px;font:600 12px/16px var(--disp);color:var(--t2)}
+.home .sb-g{justify-content:flex-end}
+.sb-g svg{color:var(--t3)}.sb-g i{font-style:normal;animation:reveal .3s var(--ease)}
+.sb-mid{display:grid;justify-items:center;gap:12px}
+.sb-score{display:grid;grid-template-columns:1fr 1fr;border-radius:8px;background:var(--raise);box-shadow:inset 0 0 0 1px var(--line2),inset 0 1px 0 rgba(196,244,241,.06);overflow:hidden}
+.sb-score>span{min-width:80px;height:84px;padding:0 16px;display:grid;place-items:center;font:700 56px/1 var(--disp);letter-spacing:-.02em;overflow:hidden;transition:color .3s}
+.sb-score>span+span{border-left:1px solid var(--line2)}
+.sb-score .lo{color:var(--t2)}
+.sb-ko{font:700 52px/60px var(--disp);letter-spacing:-.02em}
+.sb-live{display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 12px;border-radius:6px;font:500 13px var(--body);background:rgba(250,46,93,.09);box-shadow:inset 0 0 0 1px rgba(250,46,93,.32);white-space:nowrap}
+.sb-live .lv{display:inline-flex;align-items:center;color:var(--live);font:700 11px var(--body);letter-spacing:.08em;text-transform:uppercase}
+.sb-live .dot{margin-right:6px}
+.sb-live b{font-weight:700}.sb-live b.d{font-size:14px}
+.sb-live em{font-style:normal;color:var(--t2)}
+.sb-live.idle{background:none;box-shadow:inset 0 0 0 1px var(--line2)}
+.sb-sets{display:flex;gap:10px;font:600 13px var(--disp);color:var(--t2)}.sb-sets span:last-child{color:var(--cyan)}
+/* a goal: the plate takes one cyan pulse while the new digit lands */
+.board.goal .sb-score{animation:goalring 1.6s var(--ease-tide) 1}
+@keyframes goalring{0%{box-shadow:inset 0 0 0 1.5px var(--cyan),0 0 0 0 rgba(2,248,248,.45)}60%{box-shadow:inset 0 0 0 1.5px var(--cyan),0 0 0 18px rgba(2,248,248,0)}100%{box-shadow:inset 0 0 0 1px var(--line2),0 0 0 0 rgba(2,248,248,0)}}
+@media (prefers-reduced-motion:reduce){.board.goal .sb-score{animation:none}}
+.ctx .lv{margin-left:4px}.ctx .lv.t{color:var(--t2)}.ctx .lv.t:before{content:"· "}
+.banner.goal{outline-color:rgba(2,248,248,.5);background:var(--cyan08)}.banner.goal svg{color:var(--cyan)}
+
+/* ---------- match: your bets, kept small ---------- */
+.yours{margin-bottom:12px}
+.yh{display:flex;justify-content:space-between;align-items:center;padding-top:2px}
+.yh button{font:600 12px var(--body);color:var(--cyan);letter-spacing:0;text-transform:none}
+.yr{display:flex;align-items:center;gap:8px;width:100%;height:48px;padding:0 12px;border-radius:8px;background:var(--raise);box-shadow:inset 0 0 0 1px var(--line2);text-align:left}
+.yr>b:first-child{font-weight:600;margin-right:auto}
+.yr .d{font:700 15px var(--disp);display:inline-flex;align-items:center}.yr .tether{margin-right:5px}
+.yr .chev{color:var(--t2);transition:transform .24s var(--ease-move);flex:none}
+.yours.open .yr .chev{transform:rotate(180deg)}
+.yb{animation:reveal .24s var(--ease)}
+
+/* ---------- match: settled selections ---------- */
+.cell.done{cursor:default;background:none;box-shadow:none;outline:1px dashed var(--line2);outline-offset:-1px;justify-content:center;transform:none!important}
+.cell.done.wide{justify-content:space-between}
+.cell.done .l{color:var(--t2)}
+.pill{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:4px;font:700 11px var(--body);letter-spacing:.05em;text-transform:uppercase;color:var(--t2);box-shadow:inset 0 0 0 1px var(--line2);white-space:nowrap;animation:reveal .3s var(--ease)}
+.cell.done.won .pill{color:var(--cyan);box-shadow:inset 0 0 0 1px rgba(2,248,248,.4)}
+.chip.dn{color:var(--t2)}.chip.dn small{font:600 10px var(--body);letter-spacing:.05em;text-transform:uppercase;color:var(--t3)}
+.mk.alldone .mh b{color:var(--t2)}
+.mh .meta.susr{color:var(--t2)}
+
+/* ---------- bet slip ---------- */
+.line.err{padding:10px 12px;border-radius:8px;background:rgba(250,46,93,.07);box-shadow:inset 0 0 0 1px rgba(250,46,93,.28)}
+.meta.hold{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.hold button{color:var(--cyan);font-weight:700}
+.place.alt{background:none;color:var(--t1);box-shadow:inset 0 0 0 1px var(--line3)}
+.place{font-variant-numeric:tabular-nums}
+
+/* ---------- My bets ---------- */
+/* the move arrow sits outside the numeral, so every figure in the Value column shares one right edge */
+.val b{position:relative}
+.val b .wk{position:absolute;right:calc(100% + 6px);top:50%;margin-top:-3px}
+.val b .lk{position:absolute;right:calc(100% + 6px);top:50%;margin-top:-7px}
+.bet-w .co:not(.go):not(.x){width:172px;justify-content:space-between}
+.bet-w .co:disabled{justify-content:center}
+.co .d{font-variant-numeric:tabular-nums}
+.dates{display:inline-flex;align-items:center;gap:6px;flex:none}
+.dates.row{display:flex;padding:10px 0 2px}.dates.row input.chip{flex:1 1 0;min-width:0;height:40px}
+.bet-s .sums>span{display:inline-flex;align-items:center;gap:6px}
+.res svg{flex:none}
+input.chip[type=date]{color:var(--t1);color-scheme:dark;padding:0 8px;min-width:0;font:600 13px var(--body)}
+input.chip[type=date]:focus{box-shadow:inset 0 0 0 1.5px var(--cyan)}
+
+/* in the side panel and the phone sheet the filters are one scrolling row with a soft right edge */
+.mybets:not(.wide) .mb-head .filters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-right:-20px;padding-right:20px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
+.mybets:not(.wide) .mb-head .filters::-webkit-scrollbar{display:none}
+
+/* ---------- profile ---------- */
+.pav{width:40px;height:40px;border-radius:8px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line2);display:grid;place-items:center;font:700 14px var(--disp);color:var(--mint);letter-spacing:.02em;flex:none}
+.pr-h b{display:block;line-height:22px}
+.pr-bal{padding:20px 0 8px}
+.pr-bal>div{display:grid;gap:2px}
+.kpis{border-top:1px solid var(--line2)}
+.kpis div{padding:12px 0 12px 14px;border-left:1px solid var(--line)}
+.kpis div:nth-child(3n+1){padding-left:0;border-left:0}
+.kpis b{margin-top:2px}
+.profile .micro.sub{padding-top:22px}
+.profile .micro.sub.first{border-bottom:0;padding-bottom:8px}
+.pr-chart{padding-top:16px}
+.pr-ax{position:relative;height:16px;margin-top:6px}
+.pr-ax span{position:absolute;top:0;white-space:nowrap}
+.pr-ax .mk-b{color:var(--t1);transform:translateX(-50%)}
+.pr-note{display:flex;justify-content:space-between;gap:12px;margin-top:8px}
+.pr-note b{color:var(--t1);font-weight:600}
+.pr-best{border-top:0}
+.pr-best .d{font:650 15px var(--disp)}
+.profile .btn.out{margin-top:20px}
+.profile .fine{margin-top:14px;line-height:16px}
+
+/* ---------- phone ---------- */
+@media (max-width:1023px){
+  .match .crumbs{margin-bottom:10px}
+  .fm{width:40px;padding:0;justify-content:center}
+  .board{padding:12px 0 16px;margin-bottom:12px}
+  .sb-k{margin-bottom:12px}
+  .sb{column-gap:8px;align-items:start}
+  .sb-team,.sb-team.home{flex-direction:column;gap:6px;padding-top:6px;height:auto}
+  .sb-n,.home .sb-n{flex-direction:row;justify-content:center;gap:0;flex-wrap:wrap}
+  .sb-g{position:static;flex-basis:100%;min-height:16px}
+  .sb-n .n{font:600 15px/22px var(--body);letter-spacing:0}
+  .sb-star{width:26px;height:26px;margin-right:-8px}
+  .sb-star:after{content:"";position:absolute;inset:-9px}
+  .sb-g,.home .sb-g{justify-content:center;margin-top:2px}
+  .sb-mid{gap:10px}
+  .sb-score>span{min-width:54px;height:60px;padding:0 10px;font-size:38px}
+  .sb-ko{font-size:36px;line-height:60px}
+  .sb-live{height:26px;padding:0 10px;gap:7px}
+  .sb-live em.per{display:none}
+  /* three-way keys with long names wrap to two lines instead of cutting the name */
+  .grid.three .cell.wide{height:auto;min-height:56px;padding:8px 10px;justify-content:space-between}
+  .grid.three .cell.wide .l{white-space:normal;line-height:14px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+  .yours{margin-bottom:6px}
+  .mh{height:52px}
+  /* 44px targets in the slip and My bets */
+  .qs button{height:40px;font-size:13px}
+  .card .rm{width:44px;height:44px;margin:-10px -12px -10px -6px}
+  .acc{height:44px}
+  .ph{align-items:center}.ph button{padding:12px 0 12px 12px;margin:-12px 0;font-size:13px}
+  .racts .btn{height:44px}
+  .mybets .filters .chip,.mk .lines .chip{height:40px;padding:0 14px}
+  .co{height:44px}.co.x{width:48px}
+  .prefw>button{padding:12px 0;margin:-12px 0}
+  .popv button{height:44px}
+  .hold button{padding:12px 0 12px 12px;margin:-12px 0}
+  .showmore{height:48px}
+  .pl{height:56px}.pl .cell{height:44px}
+  .pr-h .ib{width:44px;height:44px}
+  .pr-bal .btn{height:44px}
+  .kpis div{padding-left:10px}
+}
+
+/* ===== your bets live: a strip across the top of the main column ===== */
+.maincol{display:flex;flex-direction:column;min-width:0;min-height:0}
+.maincol .main{flex:1;min-height:0}
+.strip{height:48px;flex:none;display:flex;align-items:center;gap:14px;padding:0 32px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,rgba(2,248,248,.06),transparent 46%),var(--bg)}
+.strip-b{flex:1;min-width:0;height:100%;display:flex;align-items:center;gap:20px;text-align:left;color:var(--t1)}
+.strip .lab{color:var(--cyan);white-space:nowrap}
+.strip-in{flex:1;min-width:0;display:flex;align-items:center;gap:22px;white-space:nowrap;animation:stripin .4s var(--ease)}
+@keyframes stripin{from{opacity:0;transform:translateY(8px)}}
+.st-m{display:inline-flex;align-items:center;font-weight:600;min-width:44px}
+.st-t{display:inline-flex;align-items:center;gap:8px}.st-t b{font-weight:600}
+.st-t .plate{grid-auto-flow:column;min-width:0}.st-t .plate>span{height:24px;padding:0 8px}.st-t .plate>span+span{border-top:0;border-left:1px solid var(--line)}
+.st-s{display:inline-flex;align-items:baseline;gap:7px}.st-s b{font-weight:600}
+.st-l{flex:1;min-width:40px;max-width:240px}
+.st-v{display:inline-flex;align-items:center;gap:8px;margin-left:auto}.st-v b{font:700 15px var(--disp);display:inline-flex;align-items:center}.st-v .tether{width:14px;height:14px;font-size:9px;margin-right:4px}
+.st-v.sus{color:var(--attn);font-weight:600;font-size:13px}
+.strip-b:hover .st-s b{color:var(--cyan)}
+.strip-n{display:flex;gap:4px;flex:none}
+.strip-n button{width:22px;height:24px;display:grid;place-items:center}
+.strip-n i{display:block;width:100%;height:3px;border-radius:2px;background:var(--line2);overflow:hidden;position:relative}
+.strip-n .on i{background:var(--line3)}
+.strip-n .on i:after{content:"";position:absolute;inset:0;background:var(--cyan);border-radius:2px}
+.strip-n .run i:after{transform-origin:left;animation:fill 5s linear}
+
+/* ===== the bet card: one ticket for any bet, made to be screenshotted ===== */
+.card-ov{position:absolute;inset:0;z-index:70;display:grid;place-items:center;overflow:auto;padding:16px}
+.card-ov .scrim{position:fixed;background:rgba(1,7,10,.82);z-index:0}
+.card-w{position:relative;z-index:1;width:min(384px,100%);animation:ticketin .42s var(--ease)}
+@keyframes ticketin{from{opacity:0;transform:translateY(18px) scale(.97)}}
+.ticket{--tk:#02f8f8;position:relative;overflow:hidden;border-radius:18px;padding:20px 22px 18px;color:var(--t1);
+  background:radial-gradient(460px 240px at 88% -12%,color-mix(in srgb,var(--tk) 20%,transparent),transparent 70%),radial-gradient(300px 200px at -10% 108%,rgba(55,209,251,.08),transparent 70%),linear-gradient(#0c212a,#07171e);
+  box-shadow:0 0 0 1px var(--line2),0 0 0 1px color-mix(in srgb,var(--tk) 14%,transparent),0 30px 80px rgba(0,0,0,.65)}
+.ticket.won{--tk:#3ddc97}.ticket.lost,.ticket.void{--tk:#56636f}.ticket.cashed{--tk:#c4f4f1}
+.ticket header{display:flex;align-items:center;justify-content:space-between}
+.ticket header img{height:16px;display:block}
+.stamp{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:4px;font:700 11px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--tk);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tk) 55%,transparent);background:color-mix(in srgb,var(--tk) 9%,transparent)}
+.stamp.lost,.stamp.void{color:var(--t2)}.stamp .dot{margin-right:0}
+.tk-main{text-align:center;padding:22px 0 4px}
+.tk-main h3{font:700 30px/36px var(--disp);letter-spacing:-.015em;margin-top:6px}
+.tk-odds{font:700 20px/26px var(--disp);color:var(--tk);margin-top:2px}.tk-odds span{color:var(--t2);font-weight:500;margin-right:5px}
+.ticket.lost .tk-odds,.ticket.void .tk-odds{color:var(--t2)}
+.tk-match{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:16px}
+.tk-match span{display:inline-flex;align-items:center;gap:8px;flex:1;min-width:0}.tk-match span:first-child{justify-content:flex-end}
+.tk-match b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tk-match .vs{font-style:normal;color:var(--t3);font-size:12px}
+.tk-match .plate{grid-auto-flow:column}.tk-match .plate>span{height:28px;padding:0 9px;font-size:15px}.tk-match .plate>span+span{border-top:0;border-left:1px solid var(--line)}
+.tk-when{margin-top:8px;display:flex;align-items:center;justify-content:center}
+.tk-chart{margin-top:16px}
+.tk-ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.tk-ch b{display:inline-flex;align-items:center;gap:8px;font:700 17px var(--disp)}.tk-ch .tether{margin-right:0}
+.tk-result{display:grid;justify-items:center;gap:4px;margin-top:18px}
+.tk-result b{font:700 34px/40px var(--disp);letter-spacing:-.02em;color:var(--tk);margin-top:6px}
+.tk-result.lost b,.tk-result.void b,.tk-result.open b{color:var(--t1)}
+.tk-result .wavemark path{stroke:var(--tk)}
+.tear{position:relative;margin:18px -22px 16px;border-top:1.5px dashed var(--line3)}
+.tear:before,.tear:after{content:"";position:absolute;top:-10px;width:18px;height:18px;border-radius:50%;background:#030b0f;box-shadow:inset 0 0 0 1px var(--line2)}
+.tear:before{left:-9px}.tear:after{right:-9px}
+.tk-nums{display:flex;align-items:center;justify-content:space-between;color:var(--t3)}
+.tk-nums div{display:grid;gap:2px}.tk-nums div:last-child{text-align:right;justify-items:end}
+.tk-nums b{font:700 21px/26px var(--disp);color:var(--t1);display:inline-flex;align-items:center}.tk-nums b.zero{color:var(--t2)}
+.ticket footer{display:flex;align-items:flex-end;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.ticket footer div{display:grid;gap:1px}.ticket footer b{font:700 13px var(--disp);letter-spacing:.04em}
+.mark rect{fill:rgba(196,244,241,.55)}
+.card-acts{display:flex;gap:8px;margin-top:14px}
+.card-acts .btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 10px;font-size:13px;background:var(--raise)}
+.card-acts .btn.pri{background:var(--mint)}
+/* every bet in a list opens its card */
+.tk-btn{display:grid;gap:2px;text-align:left;color:var(--t1);min-width:0;position:relative;padding-right:22px;flex:1}
+.tk-btn b{font-weight:600}
+.tk-btn .tk-i{position:absolute;right:0;top:2px;color:var(--t3);transition:color .16s,transform .16s var(--ease)}
+.tk-btn:hover .tk-i{color:var(--cyan);transform:translateX(2px)}.tk-btn:hover>span>b{color:var(--cyan)}
+.tr.click,.bet-s.click{cursor:pointer;transition:background .16s}
+@media (hover:hover){.tr.click:hover,.bet-s.click:hover{background:var(--hover)}.tr.click:hover b:first-child{color:var(--cyan)}}
+.tk-open{display:inline-flex;align-items:center;gap:6px;margin-top:10px}
+@media (max-width:1023px){
+  .strip{position:sticky;top:56px;z-index:9;height:44px;padding:0 16px;gap:8px;background:linear-gradient(90deg,rgba(2,248,248,.07),transparent 60%),rgba(4,16,21,.96)}
+  .strip .lab,.st-l,.st-s .meta,.st-v .meta,.st-t .crest,.st-s{display:none}
+  .strip-in{gap:12px}.st-m{min-width:0}
+  .phone:has(.strip) .stick{top:100px}
+  .card-ov{position:fixed}
+}
+@media (max-width:1279px) and (min-width:1024px){.strip{padding:0 20px}.st-l{display:none}}
+@media (max-width:1023px){.st-m{margin-right:2px}.st-t{gap:6px}.st-v{gap:6px}}
+@media (max-width:1023px){.st-t{flex:1;min-width:0}.st-t b{overflow:hidden;text-overflow:ellipsis;min-width:0}.st-v .pc{display:none}.st-v{flex:none}}
