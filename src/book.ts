@@ -16,6 +16,7 @@ export type Mkt = {
 }
 export type MatchS = {
   id: string; fx: Fixture; live: boolean; sec: number; period: string; score: [number, number]; sets?: string
+  pts?: [number, number]; srv?: 0 | 1 // tennis: points in the current game and who serves
   x: number; goals: { m: number; side: 0 | 1 }[]; gaps: [number, number][]; gapStart?: number
   pause?: { reason: string; since: number }; note?: { text: string; until: number }
   lam?: [number, number]; lamAt?: number // football goal model: expected goals still to come, and the minute they were fitted at
@@ -50,7 +51,7 @@ function seed(): Pick<Book, 'sels' | 'mkts' | 'matches'> {
     const live = !!fx.live
     const x = live && fx.sport === 'football' ? fx.live!.sec / 60 : 30
     matches[fx.id] = {
-      id: fx.id, fx, live, sec: fx.live?.sec ?? 0, period: fx.live?.period ?? '', score: fx.live?.score ?? [0, 0], sets: fx.live?.sets,
+      id: fx.id, fx, live, sec: fx.live?.sec ?? 0, period: fx.live?.period ?? '', score: fx.live?.score ?? [0, 0], sets: fx.live?.sets, pts: fx.live?.pts, srv: fx.live?.srv,
       x, goals: SEED_GOALS[fx.id] ?? [], gaps: SEED_GAPS[fx.id] ?? [],
     }
     if (fx.sport === 'football') { const st = seedState(fx); matches[fx.id].lam = fitLam(fx, st); matches[fx.id].lamAt = st.min }
@@ -165,6 +166,34 @@ function index() {
 }
 const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)]
 
+// One tennis point. Games and sets follow the real rules; a point that would end the match goes the other way,
+// so a sample match never finishes under a reviewer, and the rally stops at 6-6 in a set nobody is allowed to close.
+function tennisPoint(m: MatchS, sels: Record<string, Sel>): MatchS {
+  const sets = m.sets!.split(' ').map((x) => x.split('-').map(Number))
+  const cur = sets[sets.length - 1]
+  const ph = 1 / (sels[`${m.id}:main:h`]?.price ?? 2), pa = 1 / (sels[`${m.id}:main:a`]?.price ?? 2)
+  let w: 0 | 1 = Math.random() < ph / (ph + pa) + (m.srv === 0 ? 0.08 : -0.08) ? 0 : 1
+  const wouldWinGame = (k: 0 | 1, p: number[]) => (p[k] === 3 && p[1 - k] < 3) || p[k] === 4
+  const wouldWinSet = (k: 0 | 1) => cur[k] + 1 >= 6 && cur[k] + 1 - cur[1 - k] >= 2
+  const p = [...m.pts!] as [number, number]
+  if (wouldWinGame(w, p) && wouldWinSet(w) && m.score[w] + 1 >= 2) {
+    if (cur[0] >= 6 && cur[1] >= 6) return m
+    w = (1 - w) as 0 | 1
+  }
+  const l = (1 - w) as 0 | 1
+  if (!wouldWinGame(w, p)) {
+    if (p[w] < 3) p[w]++
+    else if (p[l] === 4) p[l] = 3
+    else p[w] = 4
+    return { ...m, pts: p }
+  }
+  cur[w]++
+  const score: [number, number] = [...m.score]
+  let period = m.period
+  if (cur[w] >= 6 && cur[w] - cur[l] >= 2) { score[w]++; sets.push([0, 0]); period = `Set ${sets.length}` }
+  return { ...m, pts: [0, 0], srv: ((m.srv ?? 0) === 0 ? 1 : 0), sets: sets.map((x) => x.join('-')).join(' '), score, period }
+}
+
 export function tick() {
   const st = G()
   if (document.hidden) return
@@ -187,6 +216,7 @@ export function tick() {
       else if (m.period === '1st half' && sec >= 45 * 60) { sec = 45 * 60; period = 'HT'; halves.push(id) }
       n = { ...m, sec, period, x: sec / 60 }
     } else if (!(m.live && m.fx.sport === 'football')) n = { ...m, x: 30 + (now - st.started) / 60000 }
+    if (n.live && n.pts && n.sets && !n.pause && Math.random() < 0.07 * st.speed) n = tennisPoint(n, st.sels)
     if (n.note && n.note.until < now) n = { ...n, note: undefined }
     matches[id] = n
   }

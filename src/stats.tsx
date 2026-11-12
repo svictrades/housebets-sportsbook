@@ -7,7 +7,7 @@ import { useLocation } from 'wouter'
 import { money } from './book'
 import { Bet, useApp } from './store'
 import { dayAt } from './data'
-import { cx, Empty, useIsPhone, useWidth, Usdt } from './ui'
+import { cx, Empty, SearchKey, useIsPhone, useWidth, Usdt } from './ui'
 
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1)
 const sign = (n: number) => `${n > 0.004 ? '+' : n < -0.004 ? '−' : ''}${money(Math.abs(n))}`
@@ -185,6 +185,7 @@ export function Stats() {
       <div className="filters sx-filters">
         {RANGES.map(([id, label]) => <button key={id} className={cx('chip', range === id && 'on')} aria-pressed={range === id} onClick={() => setRange(id)}>{label}</button>)}
         <label className="chip sel push"><select value={sport} onChange={(e) => setSport(e.target.value)} aria-label="Sport"><option value="all">All sports</option><option value="football">Football</option><option value="tennis">Tennis</option><option value="basketball">Basketball</option><option value="esports">Esports</option></select><CaretDown size={12} /></label>
+        <SearchKey />
       </div>
 
       {st.n === 0 ? (

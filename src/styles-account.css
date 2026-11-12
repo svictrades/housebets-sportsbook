@@ -276,3 +276,138 @@ button.tkt-stub:hover{background:rgba(2,248,248,.1)}button.tkt-stub:hover .tkt-o
 .mb-sum b{display:flex;align-items:center;font:650 17px/22px var(--disp);white-space:nowrap}
 .mb-sum .tether{width:15px;height:15px;font-size:9px;margin-right:6px}
 @media (max-width:1279px){.tkt-nums div{min-width:92px;padding:0 14px}.tkt .co-wrap{width:210px}.tkt{grid-template-columns:116px minmax(0,1fr)}}
+
+/* ---------- nothing floats: the sports nav is one bar, and small notes sit in tags ---------- */
+.snav{display:flex;align-items:center;gap:4px;margin-top:12px;padding:4px;border-radius:10px;background:var(--cellbg);box-shadow:inset 0 0 0 1px var(--line);overflow-x:auto;scrollbar-width:none}
+.snav::-webkit-scrollbar{display:none}
+.snav button{display:flex;align-items:center;gap:8px;height:36px;padding:0 13px;border-radius:7px;color:var(--t2);font:600 14px var(--body);white-space:nowrap;flex:none;transition:color .16s,background .16s}
+.snav button svg{flex:none;color:var(--t3);transition:color .16s}
+.snav button:hover{color:var(--t1);background:var(--hover)}.snav button:hover svg{color:var(--t2)}
+.snav button.on{color:var(--t1);background:rgba(2,248,248,.1);box-shadow:inset 0 0 0 1px rgba(2,248,248,.32)}
+.snav button.on svg{color:var(--cyan)}
+.snav em{font:700 11px/18px var(--disp);font-style:normal;min-width:20px;height:18px;padding:0 5px;border-radius:9px;text-align:center;color:#fff;background:var(--live)}
+.snav .sep{width:1px;height:20px;background:var(--line2);margin:0 6px;flex:none}
+.snav .end{margin-left:auto}.snav .end svg{color:var(--gold)}
+/* counts and notes beside a heading become small tags */
+.h small,.title small{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:5px;box-shadow:inset 0 0 0 1px var(--line2);background:var(--cellbg);font:600 12px/1 var(--body);letter-spacing:0;color:var(--t2);align-self:center}
+.h small .dot{margin-right:5px}
+.tag{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;border-radius:5px;box-shadow:inset 0 0 0 1px var(--line2);background:var(--cellbg);font:600 12px/1 var(--body);color:var(--t2);white-space:nowrap;cursor:default}
+.tag.tip .tt{left:auto;right:0;top:32px;font-weight:500}
+.tag.tip:focus .tt{display:block}
+.sh .all a,.sh .all button{height:28px;padding:0 10px;border-radius:6px;box-shadow:inset 0 0 0 1px var(--line2);transition:color .16s,box-shadow .16s,background .16s}
+.sh .all a:hover,.sh .all button:hover{background:var(--hover);box-shadow:inset 0 0 0 1px var(--line3)}
+@media (max-width:1023px){
+  .snav{margin:12px -16px 0;border-radius:0;box-shadow:inset 0 1px 0 var(--line),inset 0 -1px 0 var(--line);padding:4px 16px}
+  .snav button{height:40px;padding:0 12px}
+  .snav .end{margin-left:0}
+  .sh .all a,.sh .all button{height:36px}
+  .tag{height:28px}
+}
+.snav+.title{margin-top:22px}
+.fchips .lnk{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:4px;outline:1px dashed var(--line3);outline-offset:-1px;color:var(--t2);font:600 13px var(--body);margin-left:0;transition:color .16s,outline-color .16s}
+.fchips .lnk:hover{color:var(--cyan);outline-color:var(--cyan)}
+
+/* ---------- the sports bar on every page, with search built in ---------- */
+.maincol>.snav{margin:10px 32px 0;flex:none}
+.snav .skey{margin-left:auto;gap:9px;width:300px;max-width:32%;height:36px;padding:0 8px 0 12px;background:rgba(4,16,21,.7);box-shadow:inset 0 0 0 1px var(--line2);color:var(--t2);font-weight:500;cursor:text;justify-content:flex-start}
+.snav .skey span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.snav .skey kbd{font:600 11px var(--body);padding:2px 7px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--line2);color:var(--t3)}
+.snav .skey:hover{background:rgba(4,16,21,.9);box-shadow:inset 0 0 0 1px var(--line3);color:var(--t1)}
+.snav .fol svg{color:var(--gold)}
+.so-box.anch{border-radius:10px;max-height:min(640px,calc(100% - 140px));animation:sogrow .22s var(--ease)}
+.so-box.anch .search.big{height:44px;padding:0 14px}
+@keyframes sogrow{from{clip-path:inset(0 0 calc(100% - 44px) 0 round 10px)}to{clip-path:inset(0 round 10px)}}
+@media (max-width:1279px) and (min-width:1024px){.maincol>.snav{margin:10px 20px 0}.snav .skey{width:44px;max-width:none;padding:0;justify-content:center}.snav .skey span,.snav .skey kbd{display:none}}
+@media (max-width:1023px){
+  .phone>.snav{margin:0;flex:none}
+  .snav .skey{order:-1;margin:0 4px 0 0;width:40px;max-width:none;padding:0;justify-content:center;flex:none}
+  .snav .skey span,.snav .skey kbd{display:none}
+}
+
+/* ---------- tennis: sets, games and points in one plate ---------- */
+.plate.tn{display:inline-grid;grid-auto-flow:row!important;min-width:0;font:700 13px/1 var(--disp)}
+.plate.tn>span{height:22px!important;min-width:24px;padding:0 6px!important;border:0!important;display:grid;place-items:center;font-size:13px!important;background:none}
+.plate.tn>span.r2{border-top:1px solid var(--line)!important}
+.plate.tn>span.g,.plate.tn>span.p{border-left:1px solid var(--line)!important}
+.plate.tn .s{color:var(--t2)}.plate.tn .s.hi{color:var(--t1)}
+.plate.tn .g.lo{color:var(--t2)}.plate.tn .g:not(.cur){color:var(--t2)}.plate.tn .g:not(.cur):not(.lo){color:var(--t1)}
+.plate.tn .p{min-width:32px;background:rgba(2,248,248,.1);color:var(--mint)}
+.plate.tn .hd{font:600 10px/20px var(--body);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:var(--t2);text-align:center;padding:0 8px;border-bottom:1px solid var(--line)}
+.plate.tn .hd+.hd{border-left:1px solid var(--line)}
+.plate.tn.full{border-radius:8px}
+.plate.tn.full>span{height:42px!important;min-width:52px;font-size:22px!important}
+.plate.tn.full .p{min-width:68px}
+.srv{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 3px rgba(2,248,248,.16);flex:none;margin-left:2px}
+.sb-n .srv{width:8px;height:8px;margin:0 6px}
+@media (max-width:1023px){.plate.tn.full>span{height:36px!important;min-width:34px;font-size:17px!important}.plate.tn.full .p{min-width:44px}.plate.tn.full .hd{padding:0 4px}}
+/* bar order: places · sports · following, then search takes the rest of the bar */
+.snav .skey{margin-left:8px;flex:1 1 180px;width:auto;max-width:none;min-width:150px}
+.snav .fol{margin-left:0}
+.slate .k{gap:8px;flex-wrap:nowrap}.slate .k .kc{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slate .k .st{flex:none;white-space:nowrap;margin-left:auto}.slate .k .st small{white-space:nowrap}
+.vol{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 6px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--line2);font:600 11px/1 var(--disp);color:var(--t2);flex:none}
+.vol svg{color:var(--t3)}
+.page>.fchips:first-child{margin-top:0}
+@media (max-width:1279px) and (min-width:1024px){.snav .skey{flex:0 0 44px;min-width:0}}
+@media (max-width:1023px){.snav .skey{flex:none;min-width:0;margin:0 4px 0 0}}
+/* when the bar is tight, search stays as an icon key at the end */
+@media (max-width:1399px) and (min-width:1024px){
+  .desk:not(.panel-closed) .snav .skey,.desk.rail-open .snav .skey{flex:0 0 44px;min-width:0;width:44px;padding:0;justify-content:center;margin-left:auto}
+  .desk:not(.panel-closed) .snav .skey span,.desk:not(.panel-closed) .snav .skey kbd,.desk.rail-open .snav .skey span,.desk.rail-open .snav .skey kbd{display:none}
+}
+@media (max-width:1339px) and (min-width:1024px){.desk:not(.panel-closed) .snav button{padding:0 9px;gap:6px}.desk:not(.panel-closed) .snav .sep{margin:0 2px}.desk:not(.panel-closed) .snav .skey{padding:0;flex-basis:40px;width:40px}}
+/* the bar is back inside Sports home and Live; other pages carry a search key in their own controls */
+.page>.snav:first-child{margin-top:0}
+.skey-i{width:36px;height:36px;flex:none;color:var(--t2);transition:color .16s,box-shadow .16s,background .16s}
+.skey-i:hover{color:var(--t1);background:var(--hover);box-shadow:inset 0 0 0 1px var(--line3)}
+.ctrl .skey-i{margin-bottom:6px}
+.filters .skey-i{height:32px;width:32px;border-radius:4px}
+@media (max-width:1023px){.skey-i{width:44px;height:44px}.filters .skey-i{width:40px;height:40px}.page>.snav:first-child{margin-top:-4px}}
+
+/* ---------- bet slip selections use the same ticket as My bets: the bet above the tear, the stake below it ---------- */
+.slipc{animation:cardin .24s var(--ease)}
+.ob-hr{display:inline-flex;align-items:center;gap:4px}
+.slipc .rm{width:28px;height:28px;display:grid;place-items:center;border-radius:6px;color:var(--t3);margin-right:-6px;transition:color .16s,background .16s}
+.slipc .rm:hover{color:var(--t1);background:var(--hover)}
+.slipc .stk{margin-top:0}
+.slipc .inp{background:rgba(4,16,21,.55)}
+.slipc .qs{margin-top:-6px}
+.slipc .line,.slipc .chg{margin-top:0}
+.slipc .meta.bad{margin-top:-8px}
+.slipc.is-sus .ob-nums,.slipc.is-sus .stk,.slipc.is-sus .qs{opacity:.5}
+.ob-nums b.zero{color:var(--t3)}
+.pb>.slipc:last-child{margin-bottom:12px}
+@media (max-width:1023px){.slipc .rm{width:40px;height:40px;margin-right:-10px}}
+
+/* the live bets strip folds away on My bets and unfolds on the way out */
+.strip{overflow:hidden;transition:height .36s var(--ease-move),opacity .22s ease,border-color .36s ease}
+.strip>*{transition:transform .36s var(--ease-move),opacity .2s ease}
+.strip.off{height:0;opacity:0;border-bottom-color:transparent;pointer-events:none}
+.strip.off>*{transform:translateY(-14px);opacity:0}
+@media (max-width:1023px){.phone:has(.strip.off) .stick{top:56px}}
+
+/* odds keys name their outcome: a small crest and the team, or "Draw"; no bare 1 / X / 2 */
+.cell .l{display:inline-flex;align-items:center;justify-content:center;gap:5px;max-width:100%;font:600 11px/13px var(--body);letter-spacing:0}
+.cell .l>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cell .l .crest{flex:none;opacity:.9}
+.cell.sel .l>span{color:var(--mint)}
+.cell.wide .l,.cell.stack .l{justify-content:flex-start}
+@media (max-width:1023px){.snav .skey{flex:0 0 40px;width:40px;justify-content:center}}
+
+/* odds keys in lists: the outcome's name in words on top, its price underneath, both left-aligned with room to breathe */
+.row .px .cell,.slate .px .cell{height:54px;align-items:flex-start;justify-content:center;gap:3px;padding:0 14px}
+.row .px .cell .l,.slate .px .cell .l{justify-content:flex-start;font:500 12px/15px var(--body);color:var(--t2)}
+.row .px .cell .p,.slate .px .cell .p{font-size:16px;line-height:20px}
+.row .px .cell.sel .l>span,.slate .px .cell.sel .l>span{color:rgba(196,244,241,.8)}
+.row .px .cell.sus,.slate .px .cell.sus{align-items:center;flex-direction:row}
+.row .px{gap:10px}
+.row{grid-template-columns:76px minmax(0,1fr) 56px 432px 84px;min-height:74px}
+.slates.feat .px .cell,.slate .px .cell{padding:0 10px;height:52px}
+.slate .px{gap:8px}
+@media (max-width:1439px) and (min-width:1024px){.desk:not(.panel-closed) .row{grid-template-columns:72px minmax(0,1fr) 52px 360px 72px}.desk:not(.panel-closed) .row .px .cell{padding:0 12px}}
+@media (max-width:1279px) and (min-width:1024px){.row,.desk:not(.panel-closed) .row{grid-template-columns:72px minmax(0,1fr) 52px 312px 60px}.row .px .cell{padding:0 10px}.row .px{gap:8px}}
+@media (max-width:1023px){
+  .row{grid-template-columns:minmax(0,1fr) auto;min-height:0}
+  .row .px{gap:8px}
+  .row .px .cell{height:54px;padding:0 12px}
+}

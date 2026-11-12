@@ -5,7 +5,7 @@ import { Link } from 'wouter'
 import { fmt, MatchS, Mkt, money, Sel, useBook } from './book'
 import { Bet, cashValue, matchName, minuteLabel, useApp } from './store'
 import { COMPS, SPORTS, TABS, TEAMS } from './data'
-import { useGo, Crest, cx, Elapsed, Empty, LiveDot, OddsCell, Tabs, Tideline, useIsPhone, Usdt, valueAt } from './ui'
+import { useGo, Crest, cx, Elapsed, Empty, LiveDot, OddsCell, Tabs, Tideline, useIsPhone, Usdt, valueAt, Serve, TennisPlate } from './ui'
 import { OpenBet } from './slip'
 
 import { useQuery } from './pages'
@@ -188,6 +188,7 @@ export function Match({ id }: { id: string }) {
         <Crest id={t} size={phone ? 34 : 46} />
         <div className="sb-n">
           <span className="n">{phone ? TEAMS[t].short : <><span className="nf">{TEAMS[t].name}</span><span className="ns">{TEAMS[t].short}</span></>}</span>
+          <Serve m={m} side={i} />
           <button className={cx('sb-star', on && 'on')} aria-pressed={on} aria-label={`${on ? 'Unfollow' : 'Follow'} ${TEAMS[t].name}`} title={on ? 'Following' : 'Follow team'} onClick={() => toggleFollow(`t:${t}`, TEAMS[t].name)}><Star key={+on} size={16} weight={on ? 'fill' : 'regular'} /></button>
           {fb && m.live && <span className="sb-g d">{goals.length > 0 && <SoccerBall size={12} weight="fill" />}{goals.map((g, k) => <i key={k}>{Math.max(1, Math.floor(g.m))}'</i>)}</span>}
         </div>
@@ -216,7 +217,7 @@ export function Match({ id }: { id: string }) {
         <div className="sb">
           {side(m.fx.home, 0)}
           <div className="sb-mid">
-            {m.live ? (
+            {m.live && m.sets && m.pts ? <TennisPlate m={m} full /> : m.live ? (
               <div className="sb-score d" aria-label={`${TEAMS[m.fx.home].short} ${m.score[0]}, ${TEAMS[m.fx.away].short} ${m.score[1]}`}>
                 <span className={cx(m.score[0] < m.score[1] && 'lo')}><b key={m.score[0]} className="land">{m.score[0]}</b></span>
                 <span className={cx(m.score[1] < m.score[0] && 'lo')}><b key={m.score[1]} className="land">{m.score[1]}</b></span>
@@ -231,7 +232,6 @@ export function Match({ id }: { id: string }) {
             ) : (
               <div className="sb-live idle"><b>{m.fx.day}</b>{left != null && left < 60 && <em>{left > 0 ? `in ${left} min` : 'kicking off'}</em>}</div>
             )}
-            {m.sets && <div className="sb-sets d">{m.sets.split(' ').map((x, i) => <span key={i}>{x.replace('-', '–')}</span>)}</div>}
           </div>
           {side(m.fx.away, 1)}
         </div>

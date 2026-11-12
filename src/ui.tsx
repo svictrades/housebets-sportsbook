@@ -1,11 +1,11 @@
 // Shared building blocks: crest, price, odds cell, price-history line, event rows.
 import { ReactNode, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import NumberFlow from '@number-flow/react'
-import { CaretRight, Check, Lock, Star } from '@phosphor-icons/react'
+import { CaretRight, Check, Lock, Star, MagnifyingGlass } from '@phosphor-icons/react'
 import { useLocation } from 'wouter'
 import { useBook, MatchS } from './book'
 import { useApp, minuteLabel } from './store'
-import { COMPS, TEAMS } from './data'
+import { COMPS, TEAMS, TENNIS_PTS } from './data'
 
 // navigate, carrying any ?tab= / ?comp= filter into app state (the address bar stays a clean route)
 export function useGo() {
@@ -78,7 +78,7 @@ export function Wake({ dir, at }: { dir: number; at: number }) {
   return <i key={at} className={cx('wk', dir > 0 ? 'u' : 'dn', 'on')} style={{ animationDelay: `-${age}ms` }} aria-label={dir > 0 ? 'price up' : 'price down'} />
 }
 
-export function OddsCell({ id, label, variant = 'list' }: { id: string; label?: string; variant?: 'list' | 'wide' | 'stack' }) {
+export function OddsCell({ id, label, team, variant = 'list' }: { id: string; label?: string; team?: string; variant?: 'list' | 'wide' | 'stack' }) {
   const sel = useBook((s) => s.sels[id])
   const sus = useBook((s) => !!s.mkts[s.sels[id]?.mk]?.sus)
   const on = useApp((s) => s.slip.some((i) => i.selId === id))
@@ -95,7 +95,7 @@ export function OddsCell({ id, label, variant = 'list' }: { id: string; label?: 
       aria-label={`${sel.name}, ${sus ? 'suspended' : sel.price.toFixed(2)}${!sus && sel.dir && age < 6000 ? (sel.dir > 0 ? ', price up' : ', price down') : ''}`}
       onClick={(e) => { e.stopPropagation(); if (!sus) toggle(id) }}
     >
-      {label && <span className="l">{label}</span>}
+      {label && <span className="l">{team && <Crest id={team} size={11} />}<span>{label}</span></span>}
       <span className="p"><Price value={sel.price} dir={sel.dir} /></span>
       {on && <Check className="ok" size={10} weight="bold" aria-hidden />}
       {!sus && <Wake dir={sel.dir} at={sel.movedAt} />}
@@ -189,13 +189,41 @@ export function Tideline({ pts, h, xNow, x0, gaps = [], marks = [], level, level
 }
 
 // ---- event rows -----------------------------------------------------------
-export type MarketKey = 'main' | 'tg' | 'btts'
-export function rowSels(m: MatchS, key: MarketKey): { ids: string[]; heads: string[] } {
-  if (m.fx.sport !== 'football') return { ids: [`${m.id}:main:h`, `${m.id}:main:a`], heads: ['1', '2'] }
-  const mk = useBook.getState().mkts
-  if (key === 'tg' && mk[`${m.id}:tg`]) { const l = mk[`${m.id}:tg`].defLine ?? '2.5'; return { ids: [`${m.id}:tg:o${l}`, `${m.id}:tg:u${l}`], heads: [`Over ${l}`, `Under ${l}`] } }
-  if (key === 'btts' && mk[`${m.id}:btts`]) return { ids: [`${m.id}:btts:y`, `${m.id}:btts:n`], heads: ['Yes', 'No'] }
-  return { ids: [`${m.id}:main:h`, `${m.id}:main:d`, `${m.id}:main:a`], heads: ['1', 'X', '2'] }
+export type MarketKey = 'main' | 'hc' | 'tot' | 'btts'
+// which market on a match answers "handicap" and "total" in each sport
+const ROW_MK: Record<string, Record<string, string>> = {
+  hc: { football: 'ah', tennis: 'hc', basketball: 'hc', esports: 'hc' },
+  tot: { football: 'tg', tennis: 'games', basketball: 'pts', esports: 'maps' },
+  btts: { football: 'btts' },
+}
+export const MARKET_NAMES: Record<string, [MarketKey, string][]> = {
+  football: [['main', 'Match result'], ['hc', 'Handicap'], ['tot', 'Total goals'], ['btts', 'Both teams to score']],
+  tennis: [['main', 'Match winner'], ['hc', 'Games handicap'], ['tot', 'Total games']],
+  basketball: [['main', 'Winner'], ['hc', 'Handicap'], ['tot', 'Total points']],
+  esports: [['main', 'Match winner'], ['hc', 'Map handicap'], ['tot', 'Total maps']],
+}
+// What a row's odds keys say. A key names its outcome in words: the team (with its crest) or "Draw",
+// never a bare 1 / X / 2. `codes` is the three-letter form for narrow cards.
+export type RowSels = { ids: string[]; heads: string[]; teams: (string | undefined)[]; codes: string[] }
+export function rowSels(m: MatchS, key: MarketKey): RowSels {
+  const H = m.fx.home, A = m.fx.away
+  const code = (t: string) => (m.fx.sport === 'football' ? t.toUpperCase() : TEAMS[t].short)
+  const main: RowSels = m.fx.sport !== 'football'
+    ? { ids: [`${m.id}:main:h`, `${m.id}:main:a`], heads: [TEAMS[H].short, TEAMS[A].short], teams: [H, A], codes: [code(H), code(A)] }
+    : { ids: [`${m.id}:main:h`, `${m.id}:main:d`, `${m.id}:main:a`], heads: [TEAMS[H].short, 'Draw', TEAMS[A].short], teams: [H, undefined, A], codes: [code(H), 'Draw', code(A)] }
+  if (key === 'main') return main
+  const { mkts, sels } = useBook.getState()
+  const mk = mkts[`${m.id}:${ROW_MK[key]?.[m.fx.sport]}`]
+  if (!mk) return main
+  // a line market shows its main line; the row falls back to the winner market if that line is not a clean pair
+  const ids = mk.selIds.filter((id) => sels[id] && (mk.kind !== 'line' || sels[id].line === mk.defLine))
+  if (ids.length !== 2) return main
+  if (key === 'hc') {
+    const line = ids.map((id) => sels[id].name.split(' ').pop()!)
+    return { ids, heads: [`${TEAMS[H].short} ${line[0]}`, `${TEAMS[A].short} ${line[1]}`], teams: [H, A], codes: [`${code(H)} ${line[0]}`, `${code(A)} ${line[1]}`] }
+  }
+  const heads = ids.map((id) => sels[id].name)
+  return { ids, heads, teams: [undefined, undefined], codes: heads }
 }
 export function Heads({ heads }: { heads: string[] }) {
   return <div className={cx('cols micro', heads.length === 2 && 'two')}>{heads.map((h) => <span key={h}>{h}</span>)}</div>
@@ -227,7 +255,31 @@ export function Status({ m }: { m: MatchS }) {
   return <div className="st"><b className="d">{m.fx.time}</b><small>{m.fx.inMin != null && m.fx.inMin - gone < 60 ? (m.fx.inMin - gone > 0 ? `in ${m.fx.inMin - gone} min` : 'starting') : m.fx.day}</small></div>
 }
 // the score, as a small two-line plate: the side in front reads brighter
+// Tennis: sets won, games in the current set, points in the current game. `full` adds every set and column heads.
+export function TennisPlate({ m, full }: { m: MatchS; full?: boolean }) {
+  const sets = m.sets!.split(' ').map((x) => x.split('-').map(Number))
+  const cur = sets.length - 1
+  const pts = m.pts ?? [0, 0]
+  const shown = full ? sets.map((_, i) => i) : [cur]
+  const n = 1 + shown.length + 1
+  const row = (k: 0 | 1) => (
+    <>
+      <span className={cx('s', k === 1 && 'r2', m.score[k] > m.score[1 - k] && 'hi')}>{m.score[k]}</span>
+      {shown.map((i) => <span key={i} className={cx('g', k === 1 && 'r2', i === cur && 'cur', i !== cur && sets[i][k] < sets[i][1 - k] && 'lo')}>{sets[i][k]}</span>)}
+      <span className={cx('p', k === 1 && 'r2')}><b key={pts[k]} className="land">{TENNIS_PTS[pts[k]]}</b></span>
+    </>
+  )
+  return (
+    <span className={cx('plate tn d', full && 'full')} style={{ gridTemplateColumns: `repeat(${n}, auto)` }} role="img"
+      aria-label={`Sets ${m.score[0]} to ${m.score[1]}, games ${sets[cur][0]} to ${sets[cur][1]}, points ${TENNIS_PTS[pts[0]]} to ${TENNIS_PTS[pts[1]]}`}>
+      {full && <><i className="hd">Sets</i>{shown.map((i) => <i key={i} className="hd">{i + 1}</i>)}<i className="hd">Pts</i></>}
+      {row(0)}{row(1)}
+    </span>
+  )
+}
+export const Serve = ({ m, side }: { m: MatchS; side: 0 | 1 }) => (m.live && m.pts && m.srv === side ? <i className="srv" title="Serving" aria-label="serving" /> : null)
 export function Plate({ m }: { m: MatchS }) {
+  if (m.sets && m.pts) return <TennisPlate m={m} />
   if (m.sets) return <span className="plate sets d">{m.sets.split(' ').map((s, i) => <span key={i}>{s}</span>)}</span>
   const [a, b] = m.score
   return (
@@ -251,8 +303,8 @@ export function EventRow({ id, market = 'main', showComp }: { id: string; market
       <Status m={m} />
       <div className="tms">
         {showComp && <div className="meta cmp">{COMPS[m.fx.comp].name}</div>}
-        {[m.fx.home, m.fx.away].map((t) => { const on = follow.includes(`t:${t}`); return (
-          <div className="tm" key={t}><Crest id={t} /><span>{TEAMS[t].name}</span>
+        {[m.fx.home, m.fx.away].map((t, ti) => { const on = follow.includes(`t:${t}`); return (
+          <div className="tm" key={t}><Crest id={t} /><span>{TEAMS[t].name}</span><Serve m={m} side={ti as 0 | 1} />
             <button className={cx('tstar', on && 'on')} aria-pressed={on} aria-label={`${on ? 'Unfollow' : 'Follow'} ${TEAMS[t].name}`} onClick={(e) => { e.stopPropagation(); toggleFollow(`t:${t}`, TEAMS[t].name) }}><Star key={+on} size={13} weight={on ? 'fill' : 'regular'} /></button>
           </div>) })}
       </div>
@@ -330,4 +382,10 @@ export function Elapsed({ since }: { since: number }) {
   const now = useBook((s) => s.now)
   const s = Math.max(0, Math.floor((now - since) / 1000))
   return <span className="d">{Math.floor(s / 60)}:{String(s % 60).padStart(2, '0')}</span>
+}
+
+// Search key: one icon button that opens search, placed in each page's own row of controls.
+export function SearchKey() {
+  const set = useApp((s) => s.set)
+  return <button className="ib skey-i" aria-label="Search teams, players, competitions or markets" title="Search ( / )" onClick={() => set({ search: true, menu: false, sheet: null })}><MagnifyingGlass size={18} /></button>
 }

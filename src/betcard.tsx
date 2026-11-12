@@ -28,6 +28,7 @@ export function BetStrip() {
   const set = useApp((s) => s.set)
   const [i, setI] = useState(0)
   const [hold, setHold] = useState(false)
+  const [loc] = useLocation()
   useEffect(() => {
     if (hold || live.length < 2) return
     const t = setInterval(() => setI((x) => x + 1), 5000)
@@ -43,8 +44,10 @@ export function BetStrip() {
   const value = cashValue(bet, sel.price)
   const diff = value - bet.stake
   const sus = mkts[sel.mk].sus
+  // My bets already lists every bet, so the strip steps aside there and slides back on every other page
+  const off = loc === '/bets'
   return (
-    <div className="strip" onMouseEnter={() => setHold(true)} onMouseLeave={() => setHold(false)}>
+    <div className={cx('strip', off && 'off')} inert={off} aria-hidden={off} onMouseEnter={() => setHold(true)} onMouseLeave={() => setHold(false)}>
       <div className="sp-lab">
         <span className="micro">Your bets live</span>
         {live.length > 1 && (

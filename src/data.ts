@@ -96,7 +96,7 @@ export type Fixture = {
   sport: Sport
   home: string
   away: string
-  live?: { sec: number; period: string; score: [number, number]; sets?: string }
+  live?: { sec: number; period: string; score: [number, number]; sets?: string; pts?: [number, number]; srv?: 0 | 1 } // tennis: games per set, points in the current game (0-4 = 0,15,30,40,Ad), who serves
   time?: string
   day?: string
   inMin?: number
@@ -140,8 +140,8 @@ export const FIXTURES: Fixture[] = [
   f('bundes', 'dor', 'rbl', [2.62, 3.1, 2.95], 88, { live: { sec: 71 * 60 + 30, period: '2nd half', score: [1, 1] }, ou: [1.4, 2.85], btts: [1.01, 15] }),
   f('bundes', 'bay', 'lev', [1.75, 4.0, 4.2], 96, { time: '17:30', day: D(1), ou: [1.44, 2.7], btts: [1.5, 2.5] }),
   f('bundes', 'fra', 'rbl', [2.7, 3.5, 2.5], 80, { time: '14:30', day: D(2), ou: [1.6, 2.3], btts: [1.55, 2.35] }),
-  f('lisbon', 'varga', 'holm', [1.36, 3.05], 24, { live: { sec: 0, period: 'Set 2', score: [1, 0], sets: '6-4 3-2' } }),
-  f('lisbon', 'ibarra', 'keane', [2.1, 1.72], 22, { live: { sec: 0, period: 'Set 1', score: [0, 0], sets: '4-5' } }),
+  f('lisbon', 'varga', 'holm', [1.36, 3.05], 24, { live: { sec: 0, period: 'Set 2', score: [1, 0], sets: '6-4 3-2', pts: [3, 2], srv: 0 } }),
+  f('lisbon', 'ibarra', 'keane', [2.1, 1.72], 22, { live: { sec: 0, period: 'Set 1', score: [0, 0], sets: '4-5', pts: [1, 2], srv: 1 } }),
   f('lisbon', 'lund', 'amadi', [1.8, 2.0], 20, { time: '17:00', day: 'Today', inMin: 44 }),
   f('coastal', 'owls', 'pines', [1.55, 2.45], 41, { live: { sec: 0, period: 'Q3 4:12', score: [61, 54] } }),
   f('coastal', 'foxes', 'kites', [1.9, 1.9], 38, { time: '19:00', day: 'Today', inMin: 164 }),
@@ -151,7 +151,7 @@ export const FIXTURES: Fixture[] = [
   f('circuit', 'vanta', 'lumen', [1.5, 2.55], 18, { live: { sec: 0, period: 'Map 1', score: [0, 0] } }),
   f('circuit', 'orbit', 'drift', [2.05, 1.75], 15, { time: '21:00', day: 'Today', inMin: 284 }),
   f('circuit', 'nwind', 'vanta', [2.2, 1.66], 15, { time: '19:00', day: D(2) }),
-  f('harbour', 'petrov', 'sato', [1.72, 2.1], 26, { live: { sec: 0, period: 'Set 3', score: [1, 1], sets: '6-3 4-6 2-1' } }),
+  f('harbour', 'petrov', 'sato', [1.72, 2.1], 26, { live: { sec: 0, period: 'Set 3', score: [1, 1], sets: '6-3 4-6 2-1', pts: [2, 2], srv: 0 } }),
   f('harbour', 'duarte', 'nyberg', [1.44, 2.75], 22, { time: '18:00', day: 'Today', inMin: 104 }),
   f('harbour', 'okoye', 'holm', [2.4, 1.57], 21, { time: '11:00', day: D(1) }),
   f('lisbon', 'keane', 'amadi', [1.66, 2.2], 20, { time: '13:30', day: D(1) }),
@@ -416,14 +416,35 @@ function build(fx: Fixture): MarketDef[] {
   const H = TEAMS[fx.home].short
   const A = TEAMS[fx.away].short
   if (fx.sport === 'football') { const st = seedState(fx); return footballMarkets(fx, st, fitLam(fx, st)) }
+  // Every match offers a winner, a handicap and a total, each in the units of its sport.
+  // All three are priced from the same win chance, so they never disagree with each other.
   const main: MarketDef = { key: 'main', name: 'Match winner', tabs: ['Popular'], kind: 'row', cashout: true, sels: [{ key: 'h', name: H, price: fx.odds[0] }, { key: 'a', name: A, price: fx.odds[1] }] }
-  const near = (p: number) => +(1.9 + (p - 1.9) * 0.35).toFixed(2)
+  const p = 1 / fx.odds[0] / (1 / fx.odds[0] + 1 / fx.odds[1]) // home win chance with the margin taken out
+  const px2 = (q: number) => Math.max(1.01, +(1 / (Math.min(0.985, Math.max(0.015, q)) * 1.06)).toFixed(2))
+  const pair = (l: number, q: number) => [{ key: `h${hkey(l)}`, name: `${H} ${hcap(l)}`, price: px2(q), line: hcap(l) }, { key: `a${hkey(l)}`, name: `${A} ${hcap(-l)}`, price: px2(1 - q), line: hcap(l) }]
+  // a handicap on a continuous margin (games, points): three lines around the fair one
+  const spread = (name: string, note: string, margin: number, scale: number): MarketDef => {
+    const c = -(Math.floor(Math.abs(margin)) + 0.5) * (margin >= 0 ? 1 : -1)
+    const ls = [c + 1, c, c - 1]
+    return { key: 'hc', name, tabs: ['Popular'], kind: 'line', note, lines: ls.map(hcap), defLine: hcap(c), sels: ls.flatMap((l) => pair(l, 1 / (1 + Math.exp(-(margin + l) / scale)))) }
+  }
+  const near = (x: number) => +(1.9 + (x - 1.9) * 0.35).toFixed(2)
   const two = (key: string, name: string): MarketDef => ({ key, name, tabs: ['Popular'], kind: 'row', sels: [{ key: 'h', name: H, price: near(fx.odds[0]) }, { key: 'a', name: A, price: near(fx.odds[1]) }] })
-  if (fx.sport === 'tennis') return [main, two('set', 'Current set winner'), { key: 'games', name: 'Total games', tabs: ['Popular'], kind: 'line', lines: ['20.5', '21.5', '22.5'], defLine: '21.5', sels: ouLines([['20.5', 1.6, 2.3], ['21.5', 1.87, 1.93], ['22.5', 2.25, 1.62]]) }]
+  if (fx.sport === 'tennis') return [main,
+    spread('Games handicap', 'Games won across the match', (p - 0.5) * 12, 2.6),
+    { key: 'games', name: 'Total games', tabs: ['Popular'], kind: 'line', lines: ['20.5', '21.5', '22.5'], defLine: '21.5', sels: ouLines([['20.5', 1.6, 2.3], ['21.5', 1.87, 1.93], ['22.5', 2.25, 1.62]]) },
+    two('set', 'Current set winner')]
   if (fx.sport === 'basketball') return [main,
-    { key: 'hc', name: 'Handicap', tabs: ['Popular'], kind: 'line', note: 'Handicap line', lines: [-2.5, -4.5, -6.5].map(hcap), defLine: hcap(-4.5), sels: ([[-2.5, 1.7, 2.1], [-4.5, 1.9, 1.9], [-6.5, 2.15, 1.68]] as [number, number, number][]).flatMap(([l, a, b]) => [{ key: `h${hkey(l)}`, name: `${H} ${hcap(l)}`, price: a, line: hcap(l) }, { key: `a${hkey(l)}`, name: `${A} ${hcap(-l)}`, price: b, line: hcap(l) }]) },
+    spread('Handicap', 'Points, including overtime', (p - 0.5) * 30, 6.5),
     { key: 'pts', name: 'Total points', tabs: ['Popular'], kind: 'line', lines: ['158.5', '160.5', '162.5'], defLine: '160.5', sels: ouLines([['158.5', 1.72, 2.08], ['160.5', 1.9, 1.9], ['162.5', 2.08, 1.72]]) }]
-  return [main, two('map', 'Current map winner'), { key: 'maps', name: 'Total maps', tabs: ['Popular'], kind: 'row', sels: [{ key: 'o', name: 'Over 2.5', price: 2.1 }, { key: 'u', name: 'Under 2.5', price: 1.7 }] }]
+  // esports, best of three maps: find the chance of winning one map that gives this chance of winning the match
+  let lo = 0, hi = 1
+  for (let i = 0; i < 30; i++) { const q = (lo + hi) / 2; if (q * q * (3 - 2 * q) < p) lo = q; else hi = q }
+  const q = (lo + hi) / 2
+  return [main,
+    { key: 'hc', name: 'Map handicap', tabs: ['Popular'], kind: 'line', note: 'Best of three maps', lines: [hcap(-1.5), hcap(1.5)], defLine: hcap(p >= 0.5 ? -1.5 : 1.5), sels: [...pair(-1.5, q * q), ...pair(1.5, 1 - (1 - q) * (1 - q))] },
+    { key: 'maps', name: 'Total maps', tabs: ['Popular'], kind: 'row', note: 'Best of three maps', sels: [{ key: 'o', name: 'Over 2.5', price: px2(2 * q * (1 - q)) }, { key: 'u', name: 'Under 2.5', price: px2(1 - 2 * q * (1 - q)) }] },
+    two('map', 'Current map winner')]
 }
 
 // Opening price curves for the showcase match (minute, price), from kick-off to 52'.
@@ -448,3 +469,9 @@ for (const fx of FIXTURES) fx.n = marketsFor(fx).length
   const at = (k: string, i: number) => m.find((d) => d.key === k)?.sels.find((s) => s.key === `p${i}`)?.price
   PLAYERS.forEach((p, i) => { p.any = at('ags', i) ?? p.any; p.next = at('ngs', i) ?? p.next; p.two = at('two', i) ?? p.two })
 }
+
+// Sample popularity: how many bets each match has taken. Home ranks its Popular matches by this.
+const POP: Record<string, number> = { 'ars-bha': 4820, 'liv-mun': 4390, 'rma-bay': 3760, 'bar-sev': 2940, 'che-tot': 2680, 'bar-psg': 2380, 'mci-whu': 2210, 'ars-int': 2050, 'dor-rbl': 1870, 'new-eve': 1640, 'juv-rom': 1480, 'avl-ful': 1320, 'atm-val': 1150 }
+export const popOf = (id: string) => POP[id] ?? 240 + ([...id].reduce((a, c) => a + c.charCodeAt(0), 0) % 520)
+export const popLabel = (id: string) => { const n = popOf(id); return n >= 1000 ? `${(n / 1000).toFixed(1)}k bets` : `${n} bets` }
+export const TENNIS_PTS = ['0', '15', '30', '40', 'Ad']

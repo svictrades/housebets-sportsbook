@@ -419,10 +419,13 @@ export function SearchOverlay() {
   }, [q])
   if (!search) return null
   const go = (to: string) => () => { set({ search: false }); nav(to) }
+  // on desktop the search field opens exactly where the sports bar is, so the bar appears to become the field
+  const bar = document.querySelector('.page > .snav')?.getBoundingClientRect()
+  const at = bar && bar.width > 500 && bar.top >= 64 ? { top: bar.top, left: bar.left, width: bar.width, transform: 'none' } : null
   return (
     <div className="search-ov" role="dialog" aria-modal="true" aria-label="Search">
       <div className="scrim" onClick={() => set({ search: false })} />
-      <div className="so-box">
+      <div className={cx('so-box', at && 'anch')} style={at ?? undefined}>
         <label className="search big"><MagnifyingGlass size={20} /><input ref={ref} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search teams, players, competitions or markets" /><kbd>Esc</kbd></label>
         <div className="so-res scroll">
           {!res && <div className="meta pad">Try {['Arsenal', 'Okafor', 'LaLiga', 'corners', 'over 2.5'].map((w, i) => <span key={w}>{i > 0 && ' · '}<button className="lnk" onClick={() => setQ(w)}>{w}</button></span>)}</div>}

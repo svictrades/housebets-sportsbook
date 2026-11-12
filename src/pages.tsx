@@ -1,11 +1,11 @@
 // The five pages: Sports home, Live, Football, Match, and Bet slip + My bets.
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowRight, CaretDown, CaretRight, Info, MagnifyingGlass, SlidersHorizontal, Star, X } from '@phosphor-icons/react'
+import { ArrowRight, Basketball, Broadcast, CaretDown, CaretRight, GameController, House, Info, MagnifyingGlass, SlidersHorizontal, SoccerBall, Star, TennisBall, Ticket, X } from '@phosphor-icons/react'
 import { Link, useLocation, useSearch } from 'wouter'
 import { fmt, MatchS, minuteOf, useBook } from './book'
 import { matchName, useApp } from './store'
-import { COMPS, FOOTBALL_COMPS, SPORTS, Sport, TABS, TEAMS } from './data'
-import { useGo, Crest, cx, Empty, EventRow, Flag, LiveDot, MarketKey, OddsCell, Plate, rowSels, Status, SusSpan, Tabs, Tideline, useIsPhone, valueAt, Wake } from './ui'
+import { COMPS, FOOTBALL_COMPS, popOf, SPORTS, Sport, TABS, TEAMS } from './data'
+import { useGo, MARKET_NAMES, SearchKey, Serve, Crest, cx, Empty, EventRow, Flag, LiveDot, MarketKey, OddsCell, Plate, rowSels, Status, SusSpan, Tabs, Tideline, useIsPhone, valueAt, Wake } from './ui'
 import { BetsHead, MyBets } from './slip'
 import { SportHero } from './heroes'
 
@@ -41,14 +41,40 @@ function Section({ title, n, right, children, live }: { title: ReactNode; n?: Re
     </section>
   )
 }
-function SportTabs({ active }: { active: string }) {
+// The sports bar (Sports home and Live): where you are, the other sports, and search built into the same bar.
+// Opening search turns the bar itself into the search field (see SearchOverlay), so it is one control, not two.
+const SPORT_ICON = { football: SoccerBall, tennis: TennisBall, basketball: Basketball, esports: GameController } as const
+export function SportsBar() {
   const nav = useGo()
+  const [loc] = useLocation()
+  const set = useApp((s) => s.set)
   const liveN = useBook((s) => (s.lull ? 0 : Object.values(s.matches).filter((m) => m.live).length))
-  const items = [
-    { id: 'home', label: 'Home' }, { id: 'live', label: 'Live', n: <em className="lv">{liveN}</em> },
-    ...SPORTS.map((s) => ({ id: s.id as string, label: s.name })), { id: 'following', label: <><Star size={14} weight="fill" /> Following</> },
-  ]
-  return <Tabs className="sports" memo="sports" items={items} value={active} onChange={(id) => nav(id === 'home' ? '/' : id === 'live' ? '/live' : id === 'football' ? '/football' : id === 'following' ? '/football?tab=following' : `/sport/${id}`)} />
+  const matchSport = useBook((s) => (loc.startsWith('/match/') ? s.matches[loc.slice(7)]?.fx.sport ?? null : null))
+  const active = loc === '/' ? 'home' : loc === '/live' ? 'live' : loc === '/football' ? 'football' : loc.startsWith('/sport/') ? loc.slice(7) : matchSport ?? ''
+  // on a phone the bar scrolls sideways: keep the current page's key in view
+  const bar = useRef<HTMLElement>(null)
+  useEffect(() => { const el = bar.current, on = el?.querySelector<HTMLElement>('.on'); if (el && on && (on.offsetLeft + on.offsetWidth > el.scrollLeft + el.clientWidth - 24 || on.offsetLeft < el.scrollLeft)) el.scrollLeft = on.offsetLeft - el.clientWidth / 2 + on.offsetWidth / 2 }, [active])
+  const item = (id: string, label: string, Icon: typeof House, to: string, extra?: ReactNode, cls?: string) => {
+    const on = active === id
+    return (
+      <button key={id} className={cx(on && 'on', cls)} aria-current={on ? 'page' : undefined} onClick={() => nav(to)}>
+        <Icon size={17} weight={on ? 'fill' : 'regular'} /><span>{label}</span>{extra}
+      </button>
+    )
+  }
+  return (
+    <nav ref={bar} className="snav" aria-label="Sports and search">
+      {item('home', 'Home', House, '/')}
+      {item('live', 'Live', Broadcast, '/live', liveN > 0 && <em className="d">{liveN}</em>, 'lv')}
+      <i className="sep" aria-hidden />
+      {SPORTS.map((sp) => item(sp.id, sp.name, SPORT_ICON[sp.id], sp.id === 'football' ? '/football' : `/sport/${sp.id}`))}
+      <i className="sep" aria-hidden />
+      {item('following', 'Following', Star, '/football?tab=following', undefined, 'fol')}
+      <button className="skey" onClick={() => set({ search: true, menu: false, sheet: null })} aria-label="Search teams, players, competitions or markets">
+        <MagnifyingGlass size={17} /><span>Search</span><kbd>/</kbd>
+      </button>
+    </nav>
+  )
 }
 function NextKick() {
   const matches = useMatches()
@@ -65,7 +91,7 @@ function Slate({ id, featured }: { id: string; featured?: boolean }) {
   const sels = useBook((s) => s.sels)
   const sus = useBook((s) => s.mkts[`${id}:main`]?.sus?.reason)
   const [, nav] = useLocation()
-  const { ids, heads } = rowSels(m, 'main')
+  const { ids, codes } = rowSels(m, 'main')
   let mover = null as null | { name: string; from: number; to: number; pts: [number, number][] }
   if (featured) {
     for (const sid of ids) {
@@ -76,9 +102,9 @@ function Slate({ id, featured }: { id: string; featured?: boolean }) {
   }
   return (
     <div className={cx('slate', featured && 'ft')} role="link" tabIndex={0} onClick={() => nav(`/match/${id}`)} onKeyDown={(e) => e.key === 'Enter' && nav(`/match/${id}`)}>
-      <div className="k"><span className="meta">{COMPS[m.fx.comp].name}</span><Status m={m} /></div>
+      <div className="k"><span className="meta kc">{COMPS[m.fx.comp].name}</span><Status m={m} /></div>
       <div className="sl-t">
-        <div><div className="tm"><Crest id={m.fx.home} /><span>{TEAMS[m.fx.home].name}</span></div><div className="tm"><Crest id={m.fx.away} /><span>{TEAMS[m.fx.away].name}</span></div></div>
+        <div><div className="tm"><Crest id={m.fx.home} /><span>{TEAMS[m.fx.home].name}</span><Serve m={m} side={0} /></div><div className="tm"><Crest id={m.fx.away} /><span>{TEAMS[m.fx.away].name}</span><Serve m={m} side={1} /></div></div>
         {m.live && <Plate m={m} />}
       </div>
       {mover && (
@@ -91,7 +117,7 @@ function Slate({ id, featured }: { id: string; featured?: boolean }) {
           <Tideline pts={mover.pts} h={30} x0={m.x - 14} xNow={m.x} end={mover.to >= mover.from ? 1 : -1} />
         </div>
       )}
-      <div className={cx('px', ids.length === 2 && 'two')}>{sus ? <SusSpan reason={sus} /> : ids.map((sid, i) => <OddsCell key={sid} id={sid} label={heads[i]} />)}</div>
+      <div className={cx('px', ids.length === 2 && 'two')}>{sus ? <SusSpan reason={sus} /> : ids.map((sid, i) => <OddsCell key={sid} id={sid} label={codes[i]} />)}</div>
     </div>
   )
 }
@@ -113,16 +139,13 @@ export function Home() {
   const liveTotal = list.filter((m) => m.live).length
   const soon = list.filter((m) => !m.live && m.fx.inMin != null && !yours.includes(m)).sort(byKick).slice(0, 5)
   const featured = useMemo(() => {
-    const score = (m: MatchS) => Math.max(...rowSels(m, 'main').ids.map((id) => Math.abs(sels[id].price / valueAt(sels[id].hist, m.x - 10) - 1)))
-    // matches already pinned under Your matches are not repeated here
-    return all.filter((m) => m.fx.sport === 'football' && (m.live || m.fx.inMin != null) && !yoursAll.slice(0, 3).includes(m)).sort((a, b) => score(b) - score(a)).slice(0, 4).map((m) => m.id)
-    // re-rank on a slow beat so slates do not shuffle on every tick
-  }, [all.length, Math.floor(Date.now() / 30000)])
+    // the matches taking the most bets; ones already pinned under Your matches are not repeated here
+    return all.filter((m) => m.fx.sport === 'football' && (m.live || m.fx.inMin != null) && !yoursAll.slice(0, 3).includes(m)).sort((a, b) => popOf(b.id) - popOf(a.id)).slice(0, 4).map((m) => m.id)
+  }, [all.length, yoursAll.length])
   const name = (id: string) => (id[0] === 'c' ? COMPS[id.slice(2)]?.name : id[0] === 't' ? TEAMS[id.slice(2)]?.name : null)
   return (
     <div className="page">
-      <SearchField placeholder="Search teams, players, competitions or markets" />
-      <SportTabs active={sport ?? 'home'} />
+      <SportsBar />
       {sport && <h1 className="title">{SPORTS.find((s) => s.id === sport)!.name} <small>{liveTotal} live</small></h1>}
       {!sport && (
         <div className="fchips">
@@ -134,7 +157,7 @@ export function Home() {
         </div>
       )}
       {!sport && (
-        <Section title="Featured matches" n={<span className="tip">ranked by price moves · last 10 min <Info size={13} /><span className="tt">The four matches whose sample prices moved most.</span></span>}>
+        <Section title="Popular matches">
           <div className="slates feat">{featured.map((id) => <Slate key={id} id={id} featured />)}</div>
         </Section>
       )}
@@ -205,7 +228,7 @@ export function Live() {
   const comps = [...new Set(live.filter((m) => sport === 'all' || m.fx.sport === sport).map((m) => m.fx.comp))]
   return (
     <div className="page">
-      <SportTabs active="live" />
+      <SportsBar />
       <h1 className="title">Live <small>{live.length} in play</small></h1>
       <div className="filters">
         <button className={cx('chip', sport === 'all' && 'on')} aria-pressed={sport === 'all'} onClick={() => { setSport('all'); setComp('all') }}>All <small>{live.length}</small></button>
@@ -247,8 +270,8 @@ export function SportPage({ sport = 'football' }: { sport?: Sport }) {
   if (comp !== 'all') list = (tab === 'following' ? list : all).filter((m) => m.fx.comp === comp)
   const groups = groupBy(list).sort((a, b) => comps.indexOf(a[0]) - comps.indexOf(b[0]))
   const clubs = [...new Set(all.flatMap((m) => [m.fx.home, m.fx.away]))]
-  const marketSel = sport === 'football' && (
-    <label className="chip sel"><span className="meta">Market</span><select value={market} onChange={(e) => setMarket(e.target.value as MarketKey)} aria-label="Market"><option value="main">Match result</option><option value="tg">Total goals 2.5</option><option value="btts">Both teams to score</option></select><CaretDown size={12} /></label>
+  const marketSel = (
+    <label className="chip sel"><span className="meta">Market</span><select value={market} onChange={(e) => setMarket(e.target.value as MarketKey)} aria-label="Market">{MARKET_NAMES[sport].map(([k, n]) => <option key={k} value={k}>{n}</option>)}</select><CaretDown size={12} /></label>
   )
   const compChips = (
     <div className="filters comps-f">
@@ -272,6 +295,7 @@ export function SportPage({ sport = 'football' }: { sport?: Sport }) {
       </header>
       <div className="ctrl">
         <Tabs items={[{ id: 'now', label: 'Live & upcoming', n: now.length }, { id: 'all', label: `All ${name.toLowerCase()}`, n: all.length }, { id: 'following', label: 'Following', n: all.filter(isMine).length }]} value={tab} onChange={(t) => go({ tab: t })} />
+        <SearchKey />
         {marketSel && <span className="only-d">{marketSel}</span>}
         <button className="ib only-p" aria-label="Filters" onClick={() => setSheet(true)}><SlidersHorizontal size={20} /></button>
       </div>

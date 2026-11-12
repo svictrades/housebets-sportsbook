@@ -5,7 +5,7 @@ import { useLocation } from 'wouter'
 import { fmt, money, useBook } from './book'
 import { Bet, cashValue, isDead, matchName, minuteLabel, needsAccept, stakeState, useApp } from './store'
 import { dayAt } from './data'
-import { cx, Elapsed, Empty, LiveDot, OddsCell, Price, Tabs, Tideline, Usdt, Wake } from './ui'
+import { cx, Elapsed, Empty, LiveDot, OddsCell, Price, Tabs, Tideline, Usdt, Wake, SearchKey } from './ui'
 
 function Context({ selId }: { selId: string }) {
   const sel = useBook((s) => s.sels[selId])
@@ -25,6 +25,8 @@ function SlipCard({ selId }: { selId: string }) {
   const { setStake, remove, accept, clearErr, pref, balance, placing } = useApp()
   const sel = useBook((s) => s.sels[selId])
   const mk = useBook((s) => s.mkts[sel.mk])
+  const m = useBook((s) => s.matches[sel.match])
+  const lull = useBook((s) => s.lull)
   const sus = mk.sus
   const dead = !!sel.settled || !!mk.closed // can never be placed as it stands
   const off = !!sus || dead
@@ -43,15 +45,21 @@ function SlipCard({ selId }: { selId: string }) {
   const add = (v: number | 'max') => setStake(selId, fmt(v === 'max' ? Math.min(500, balance) : Math.min(500, n + v)))
   const lastHist = sel.hist.slice(-6)
   return (
-    <div className={cx('card', off && 'is-sus')}>
-      <div className="t">
-        <div>
-          <h4>{sel.name}</h4>
-          <Context selId={selId} />
-        </div>
-        <span className="o d"><Price value={sel.price} dir={sel.dir} /></span>
-        <button className="rm" aria-label={`Remove ${sel.name}`} onClick={() => remove(selId)}><X size={16} /></button>
+    <div className={cx('ob slipc', m.live && !lull && 'live', off && 'is-sus')}>
+      <div className="ob-h">
+        <span className="ob-t"><b>{sel.name}</b></span>
+        <span className="ob-hr">
+          <span className="ob-live">{m.live && !lull ? <><LiveDot still />{m.fx.sport === 'football' && <b className="d">{m.score[0]}–{m.score[1]}</b>}<span className="d">{minuteLabel(m)}</span></> : <span className="d">{m.fx.time ?? 'Soon'}</span>}</span>
+          <button className="rm" aria-label={`Remove ${sel.name}`} onClick={() => remove(selId)}><X size={16} /></button>
+        </span>
+        <span className="meta ob-m">{mk.name} · {matchName(m)}</span>
       </div>
+      <div className="ob-nums">
+        <div><span className="meta">Odds</span><b className="d"><Price value={sel.price} dir={sel.dir} /></b></div>
+        <div><span className="meta">Stake</span><b className={cx('d', !n && 'zero')}>{n > 0 ? money(n) : '—'}</b></div>
+        <div><span className="meta">To return</span><b className={cx('d', !n && 'zero')}>{n > 0 ? money(n * sel.price) : '—'}</b></div>
+      </div>
+      <div className="ob-tear" aria-hidden />
       {sel.settled ? <div className="line sus"><Lock size={14} /> Settled by the score · remove it to carry on</div>
         : mk.closed ? (!item.err && <div className="line sus"><Lock size={14} /> Market closed · {sus?.reason ?? 'no longer on sale'}</div>)
         : sus && <div className="line sus"><Lock size={14} /> Suspended · {sus.reason} · it will reopen here</div>}
@@ -85,7 +93,6 @@ function SlipCard({ selId }: { selId: string }) {
           />
           <small>USDT</small>
         </label>
-        <div className="ret meta">Returns<b className="d">{n > 0 ? money(n * sel.price) : '—'}</b></div>
       </div>
       {st.msg && <div className="meta bad">{st.msg}</div>}
       <div className="qs">
@@ -426,6 +433,7 @@ export function MyBets({ wide }: { wide?: boolean }) {
           {RANGES.map(([id, label]) => <button key={id} className={cx('chip', range === id && 'on')} aria-pressed={range === id} onClick={() => setRange(id)}>{label}</button>)}
           {range === 'custom' && wide && <span className="dates"><input type="date" className="chip" value={from} max={to} onChange={(e) => e.target.value && setFrom(e.target.value)} aria-label="From date" /><span className="meta">to</span><input type="date" className="chip" value={to} min={from} max={iso(dayAt(0))} onChange={(e) => e.target.value && setTo(e.target.value)} aria-label="To date" /></span>}
           <label className="chip sel"><select value={sport} onChange={(e) => setSport(e.target.value)} aria-label="Sport"><option value="all">All sports</option><option value="football">Football</option><option value="tennis">Tennis</option><option value="basketball">Basketball</option><option value="esports">Esports</option></select><CaretDown size={12} /></label>
+          {wide && <SearchKey />}
         </div>
       </div>
       {range === 'custom' && !wide && <div className="dates row"><input type="date" className="chip" value={from} max={to} onChange={(e) => e.target.value && setFrom(e.target.value)} aria-label="From date" /><span className="meta">to</span><input type="date" className="chip" value={to} min={from} max={iso(dayAt(0))} onChange={(e) => e.target.value && setTo(e.target.value)} aria-label="To date" /></div>}
