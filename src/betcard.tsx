@@ -61,7 +61,8 @@ export function BetStrip() {
           </span>
           <span className="sp-c c-sel"><small>Your bet</small><b>{bet.sel} <span className="d at">@ {fmt(bet.odds)}</span></b></span>
           <span className="sp-c c-stake"><small>Stake</small><b className="d"><Usdt />{money(bet.stake)}</b></span>
-          <span className="st-l"><Tideline pts={valuePts(bet, sel.hist)} h={26} x0={bet.placedX} xNow={m.x} gaps={m.gaps} end={-sel.dir} minSpan={bet.stake * 0.08} /></span>
+          <span className="sp-c c-ret"><small>To return</small><b className="d"><Usdt />{money(bet.stake * bet.odds)}</b></span>
+          <span className="sp-c c-trend"><small>Value since placed</small><span className="sp-spark"><Tideline pts={valuePts(bet, sel.hist)} h={20} x0={bet.placedX} xNow={m.x} gaps={m.gaps} level={bet.stake} end={-sel.dir} minSpan={bet.stake * 0.08} /></span></span>
           {sus ? <span className="sp-c c-cash sus"><small>Cash out paused</small><b><Lock size={14} /> {sus.reason}</b></span> : (
             <span className="sp-c c-cash"><small>Cash out now</small><b className="d"><Usdt />{money(value)}<em className={cx('pc', diff >= 0 ? 'u' : 'dn')}>{diff >= 0 ? '+' : '−'}{money(Math.abs(diff))}</em></b></span>
           )}

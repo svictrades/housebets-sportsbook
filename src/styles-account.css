@@ -63,17 +63,24 @@
 .sp-c.c-cash>b{font:700 18px/22px var(--disp);gap:0}.sp-c.c-cash .tether{width:17px;height:17px;font-size:10px}
 .sp-c.c-cash .pc{margin-left:10px;font-size:12px}
 .sp-c.c-cash.sus>b{font:600 14px/20px var(--body);color:var(--attn);gap:6px}
-.strip .st-l{flex:1;min-width:0;max-width:none;overflow:hidden;align-self:center;padding:0 24px;border-left:1px solid var(--line)}
+/* the value graph is one more labelled cell: a short sparkline against the stake (dashed), never a full-width line */
+.sp-c{flex:1 1 auto}
+.sp-c.c-cash{flex:0 0 auto}
+.sp-spark{display:block;width:168px;max-width:100%}
+.sp-c.c-trend .tl-level{stroke:var(--t3);stroke-width:1;animation:none}
+.sp-c.c-ret{display:none}
+@media (min-width:1640px){.sp-c.c-ret{display:grid}}
+.panel-closed .sp-c.c-ret{display:grid}
 .strip .st-t .plate>span{height:22px}
 .sp-go{color:var(--t3);flex:none;transition:color .16s,transform .16s var(--ease)}
 .strip-b:hover .sp-go{color:var(--cyan);transform:translateX(2px)}
 .strip-b:hover .sp-c.c-sel>b{color:var(--cyan)}
-@media (max-width:1279px) and (min-width:1024px){.sp-c.c-stake,.strip .st-l{display:none}.sp-c{padding:0 16px}.strip{padding:0 12px 0 20px}}
+@media (max-width:1279px) and (min-width:1024px){.sp-c.c-stake,.sp-c.c-trend,.sp-c.c-ret,.panel-closed .sp-c.c-ret{display:none}.sp-c{padding:0 16px}.strip{padding:0 12px 0 20px}}
 @media (max-width:1023px){
   .strip{height:46px;padding:0 12px 0 16px}
   .sp-lab{padding-right:10px}.sp-lab .micro{display:none}.sp-lab .strip-n{display:grid;gap:3px}.sp-lab .strip-n button{width:4px;height:10px}.sp-lab .strip-n i{height:100%;width:3px}
   .strip-b{padding-left:10px;border-left:0;gap:4px}
-  .sp-c.c-sel,.sp-c.c-stake,.strip .st-l,.sp-c.c-match .cmp,.sp-c.c-cash small{display:none}
+  .sp-c.c-sel,.sp-c.c-stake,.sp-c.c-trend,.sp-c.c-ret,.panel-closed .sp-c.c-ret,.sp-c.c-match .cmp,.sp-c.c-cash small{display:none}
   .sp-c{padding:0 10px}.sp-c.c-match{display:flex;align-items:center;gap:8px;flex:1}.sp-c.c-match small{letter-spacing:0;font-size:13px}
   .sp-c.c-cash{min-width:0;border-left:0;padding-right:0}.sp-c.c-cash>b{font-size:15px}.sp-c.c-cash .pc{display:none}
   .strip .st-t{flex:1;min-width:0}
@@ -165,3 +172,107 @@
   .sx-tip{width:170px}
 }
 .top:not(.in) .crown{order:2}
+
+/* ---------- open and settled bets, compact (side panel, phone sheet): three calm groups ---------- */
+.ob{display:grid;gap:14px;padding:18px 0 20px;border-bottom:1px solid var(--line)}
+.ob-h{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:3px 12px;width:100%;text-align:left;color:var(--t1)}
+.ob-t{display:flex;align-items:center;gap:8px;min-width:0;font:600 15px/22px var(--body)}
+.ob-t b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ob-t .tk-i{color:var(--t3);flex:none;transition:color .16s,transform .16s var(--ease)}
+.ob-h:hover .tk-i,.ob.click:hover .tk-i{color:var(--cyan);transform:translateX(2px)}
+.ob-h:hover .ob-t b{color:var(--cyan)}
+.ob-live{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--line2);font:600 12px var(--body);white-space:nowrap}
+.ob-live .dot{margin-right:0}.ob-live b{font-weight:700}.ob-live span.d{color:var(--t2)}
+.ob-m{grid-column:1/-1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ob-nums{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.ob-nums div{display:grid;gap:1px;padding:9px 0 9px 14px;border-left:1px solid var(--line)}
+.ob-nums div:first-child{padding-left:0;border-left:0}
+.ob-nums b{font:650 15px/20px var(--disp)}.ob-nums b.zero{color:var(--t2)}
+.ob-cash{display:grid;gap:8px}
+.ob-v{display:flex;align-items:center;justify-content:space-between}
+.ob-v .pc{font-size:11px;padding:2px 6px}
+.ob .co-wrap{width:100%;justify-items:stretch;text-align:left}
+.ob .co{width:100%;height:44px;justify-content:space-between;padding:0 16px}
+.ob .co .co-v{font-size:16px}
+.ob .co.go,.ob .co:disabled{justify-content:center}
+.ob .co.x{width:44px;flex:none;padding:0;justify-content:center}
+.ob .co-wrap.done{justify-items:start}.ob .co-wrap.done .ripple{right:auto;left:8px}
+.ob.settled{gap:10px;padding:16px 0}
+.ob.settled .res{justify-self:end}
+.ob.click{cursor:pointer;transition:background .16s}
+@media (hover:hover){.ob.click:hover{background:var(--hover)}}
+.ob-when{margin-top:-2px}
+/* strip fit: tighter cells, and the least important cell (stake) steps aside when the side panel leaves less room */
+.sp-c{padding:0 18px}.sp-lab{padding-right:18px}.strip-b{padding-left:18px}
+.sp-spark{width:150px}
+.sp-c.c-cash{min-width:0;padding-right:6px}
+.strip-in{overflow:hidden}
+@media (max-width:1559px) and (min-width:1280px){.desk:not(.panel-closed) .sp-c.c-stake{display:none}}
+@media (max-width:1023px){.sp-c{padding:0 10px}.sp-lab{padding-right:10px}.strip-b{padding-left:10px}.sp-c.c-cash{padding-right:0}}
+@media (max-width:1399px) and (min-width:1280px){.desk:not(.panel-closed) .sp-spark{width:96px}.desk:not(.panel-closed) .sp-c{padding:0 14px}}
+
+/* ---------- bets as tickets: a stub (when, which), the bet, and a tear-off cash-out ---------- */
+.tkt{--notch:var(--bg);display:grid;grid-template-columns:132px minmax(0,1fr);margin-top:12px;border-radius:12px;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,rgba(128,231,254,.055),rgba(128,231,254,.022));box-shadow:inset 0 0 0 1px var(--line2)}
+.tkt-stub{display:grid;align-content:center;gap:3px;padding:16px 14px 16px 18px;text-align:left;color:var(--t1);position:relative;border-right:1.5px dashed var(--line3);background:rgba(128,231,254,.03);transition:background .16s}
+.tkt.live .tkt-stub{background:linear-gradient(165deg,rgba(2,248,248,.13),rgba(2,248,248,.02) 70%)}
+.tkt-stub:before,.tkt-stub:after{content:"";position:absolute;right:-9px;width:16px;height:16px;border-radius:50%;background:var(--notch);box-shadow:inset 0 0 0 1px var(--line2)}
+.tkt-stub:before{top:-8px}.tkt-stub:after{bottom:-8px}
+.tkt-stub .micro{white-space:nowrap}
+.tkt-stub>b{font:700 20px/24px var(--disp)}
+.tkt-id{font:600 11px/14px var(--disp);letter-spacing:.04em;color:var(--t2)}
+.tkt-open{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font:600 12px var(--body);color:var(--t2);transition:color .16s}
+button.tkt-stub:hover{background:rgba(2,248,248,.1)}button.tkt-stub:hover .tkt-open{color:var(--cyan)}
+.tkt-body{display:grid;min-width:0}
+.tkt-top{display:flex;align-items:center;gap:16px;min-height:76px;padding:12px 0 12px 20px}
+.tkt-sel{display:grid;gap:2px;flex:1;min-width:0}
+.tkt-sel b{font:600 16px/22px var(--body);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tkt-sel .meta{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tkt .ob-live{flex:none}
+.tkt-nums{display:flex;flex:none;align-self:stretch}
+.tkt-nums div{display:grid;align-content:center;gap:2px;min-width:112px;padding:0 20px;border-left:1px solid var(--line2)}
+.tkt-nums b{display:flex;align-items:center;font:650 16px/22px var(--disp);white-space:nowrap}
+.tkt-nums b.zero{color:var(--t2)}
+.tkt-nums .tether{width:15px;height:15px;font-size:9px;margin-right:6px}
+.tkt-cash{display:flex;align-items:flex-end;gap:28px;padding:14px 20px 16px;border-top:1.5px dashed var(--line2)}
+.tkt-cash.none{padding:10px 20px 12px}
+.tkt-line{flex:1;min-width:0;display:grid;gap:8px}
+.tkt .co-wrap{width:248px;flex:none;justify-items:stretch;text-align:left}
+.tkt-cash.none .co-wrap{width:auto}
+.tkt .co{width:100%;height:44px;justify-content:space-between;padding:0 16px}
+.tkt .co .co-v{font-size:16px}
+.tkt .co.go,.tkt .co:disabled{justify-content:center}
+.tkt .co.x{width:44px;flex:none;padding:0;justify-content:center}
+.tkt .co-wrap.done{justify-items:start}.tkt .co-wrap.done .ripple{right:auto;left:8px}
+.tkt.new{animation:tktnew 2.4s var(--ease)}
+@keyframes tktnew{from{box-shadow:inset 0 0 0 1.5px var(--cyan)}}
+/* settled tickets: one row, the stub tinted by the result */
+.tkt.settled{margin-top:8px;cursor:pointer;transition:background .16s}
+.tkt.settled .tkt-top{min-height:64px;padding:8px 0 8px 20px}
+.tkt.settled .tkt-stub{padding:10px 14px 10px 18px}.tkt.settled .tkt-stub>b{font-size:16px;line-height:20px}
+.tkt.settled.won .tkt-stub{background:linear-gradient(165deg,rgba(24,168,134,.2),rgba(24,168,134,.03) 70%)}
+.tkt.settled.cashed .tkt-stub{background:linear-gradient(165deg,rgba(196,244,241,.12),rgba(196,244,241,.02) 70%)}
+.tkt.settled .res{flex:none;min-width:92px;justify-content:flex-end}
+@media (hover:hover){.tkt.settled:hover{background:linear-gradient(180deg,rgba(128,231,254,.09),rgba(128,231,254,.04))}}
+.mybets.wide .sum{margin-bottom:6px}
+/* the same ticket, narrow (side panel, phone sheet) */
+.ob{--notch:var(--bg);margin-top:12px;padding:14px 14px 16px;border-bottom:0;border-radius:12px;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,rgba(128,231,254,.055),rgba(128,231,254,.022));box-shadow:inset 0 0 0 1px var(--line2)}
+.panel .ob,.sheet .ob{--notch:var(--raise)}
+.ob.live{background:linear-gradient(170deg,rgba(2,248,248,.085),rgba(128,231,254,.022) 42%)}
+.ob.settled{padding:12px 14px;margin-top:8px}
+.ob-nums{border:0;margin:0 -2px}
+.ob-nums div{border-left:1px solid var(--line2)}
+.ob-tear{height:0;margin:2px -14px 0;border-top:1.5px dashed var(--line3);position:relative}
+.ob-tear:before,.ob-tear:after{content:"";position:absolute;top:-9px;width:16px;height:16px;border-radius:50%;background:var(--notch);box-shadow:inset 0 0 0 1px var(--line2)}
+.ob-tear:before{left:-8px}.ob-tear:after{right:-8px}
+.ob.settled.won{background:linear-gradient(170deg,rgba(24,168,134,.12),rgba(128,231,254,.022) 42%)}
+/* My bets page header: title on the left, what the open bets add up to on the right */
+.mb-top{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:4px 0 10px}
+.mb-top .title{margin:0}
+.mb-sum{display:flex}
+.mb-sum div{display:grid;gap:1px;padding:0 0 0 20px;margin-left:20px;border-left:1px solid var(--line2)}
+.mb-sum div:first-child{border-left:0;margin-left:0;padding-left:0}
+.mb-sum b{display:flex;align-items:center;font:650 17px/22px var(--disp);white-space:nowrap}
+.mb-sum .tether{width:15px;height:15px;font-size:9px;margin-right:6px}
+@media (max-width:1279px){.tkt-nums div{min-width:92px;padding:0 14px}.tkt .co-wrap{width:210px}.tkt{grid-template-columns:116px minmax(0,1fr)}}

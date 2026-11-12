@@ -6,7 +6,7 @@ import { fmt, MatchS, minuteOf, useBook } from './book'
 import { matchName, useApp } from './store'
 import { COMPS, FOOTBALL_COMPS, SPORTS, Sport, TABS, TEAMS } from './data'
 import { useGo, Crest, cx, Empty, EventRow, Flag, LiveDot, MarketKey, OddsCell, Plate, rowSels, Status, SusSpan, Tabs, Tideline, useIsPhone, valueAt, Wake } from './ui'
-import { MyBets } from './slip'
+import { BetsHead, MyBets } from './slip'
 import { SportHero } from './heroes'
 
 export function useQuery() {
@@ -320,13 +320,11 @@ export { Section }
 export function Bets() {
   const phone = useIsPhone()
   const set = useApp((s) => s.set)
-  const n = useApp((s) => s.bets.filter((b) => b.status === 'open').length)
-  const total = useApp((s) => s.bets.length)
   useEffect(() => { if (phone) set({ sheet: 'bets' }) }, [phone])
   if (phone) return <Home />
   return (
     <div className="page">
-      <h1 className="title">My bets <small>{n} open · {total - n} settled</small></h1>
+      <BetsHead />
       <MyBets wide />
     </div>
   )

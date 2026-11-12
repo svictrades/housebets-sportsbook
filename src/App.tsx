@@ -81,6 +81,7 @@ export function App() {
     const scene = params.get('scene')
     if (params.get('rail') === 'open') useShell.setState({ rail: true })
     if (params.get('panel') === 'closed') useShell.setState({ panel: false })
+    if (params.get('panel') === 'bets') useApp.getState().set(window.matchMedia('(max-width: 1023px)').matches ? { sheet: 'bets' } : { panelTab: 'bets' })
     if (scene === 'demo') timers.push(setTimeout(() => useApp.getState().set(window.matchMedia('(max-width: 1023px)').matches ? { menu: true } : { scenes: true }), 400))
     if (scene === 'goal') timers.push(setTimeout(() => scoreGoal('ars-bha', 0), 1500))
     if (scene === 'lull') useBook.getState().set({ lull: true })

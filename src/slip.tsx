@@ -232,7 +232,7 @@ export function SlipFooter() {
 }
 
 // ---- My bets ----------------------------------------------------------------
-function CashOut({ bet, onLock }: { bet: Bet; onLock: (v: number | null, solid?: boolean) => void }) {
+function CashOut({ bet, onLock, bare }: { bet: Bet; onLock: (v: number | null, solid?: boolean) => void; bare?: boolean }) {
   const sel = useBook((s) => s.sels[bet.selId])
   const m = useBook((s) => s.matches[bet.matchId])
   const mk = useBook((s) => s.mkts[sel.mk])
@@ -297,7 +297,7 @@ function CashOut({ bet, onLock }: { bet: Bet; onLock: (v: number | null, solid?:
       >
         <span>Cash out</span><span className="d co-v"><Usdt /><Price value={value} dir={-sel.dir} /></span>
       </button>
-      <span className={cx('meta', note && 'note')}>{note || `${diff >= 0 ? '+' : '−'}${money(Math.abs(diff))} vs stake`}</span>
+      {(note || !bare) && <span className={cx('meta', note && 'note')}>{note || `${diff >= 0 ? '+' : '−'}${money(Math.abs(diff))} vs stake`}</span>}
     </div>
   )
 }
@@ -339,33 +339,58 @@ export function OpenBet({ bet, wide }: { bet: Bet; wide?: boolean }) {
       {bet.returns >= bet.stake && <span className="ripple" aria-hidden />}
     </div>
   ) : (
-    <CashOut bet={bet} onLock={(v, solid) => setLevel(v == null ? null : { v, solid })} />
+    <CashOut bet={bet} bare onLock={(v, solid) => setLevel(v == null ? null : { v, solid })} />
   )
-  if (wide)
+  const stubWhen = (placed: string) => { const i = placed.lastIndexOf(' '); return [placed.slice(0, i), placed.slice(i + 1)] }
+  const liveChip = <span className="ob-live">{m.live && !lull ? <><LiveDot still />{m.fx.sport === 'football' && <b className="d">{m.score[0]}–{m.score[1]}</b>}<span className="d">{minuteLabel(m)}</span></> : <span className="d">{m.fx.time ?? 'Soon'}</span>}</span>
+  const gain = value - bet.stake
+  const caption = (
+    <div className="ob-v"><span className="micro">{cashed ? 'Value when cashed out' : level ? 'Value held' : 'Cash-out value'}</span>{!cashed && <em className={cx('pc', gain >= 0 ? 'u' : 'dn')}>{gain >= 0 ? '+' : '−'}{money(Math.abs(gain))} vs stake</em>}</div>
+  )
+  // full-width layout (My bets page, match page): a ticket. The stub carries when and which; the body carries the bet; the tear-off part is the cash-out.
+  if (wide) {
+    const [day, time] = stubWhen(bet.placed)
     return (
-      <div className={cx('bet-w', !!bet.isNew && Date.now() - bet.isNew < 3000 && 'new')}>
-        <div className="bet">
-          <span className="meta">{bet.placed.split(' ')[0]}<br />{bet.placed.split(' ')[1]}</span>
-          <button className="tk-btn" onClick={() => openCard(bet.id)} aria-label={`Open bet card for ${bet.sel}`}><span><b>{bet.sel}</b> <span className="meta">· {bet.market}</span></span>{ctx}<Ticket className="tk-i" size={15} /></button>
-          <span className="n d">{fmt(bet.odds)}</span>
-          <span className="n d"><Usdt />{money(bet.stake)}</span>
-          <span className="n d"><Usdt />{money(bet.stake * bet.odds)}</span>
-          {valueBox}
-        </div>
-        <div className="betx">
-          <div className="lw">
-            {line}
-            <div className="micro ax"><span>Placed</span>{level && !cashed && <span>Now {money(value)} · held at {money(level.v)}</span>}<span>Now</span></div>
+      <article className={cx('tkt', m.live && !lull && 'live', cashed && 'cashed', !!bet.isNew && Date.now() - bet.isNew < 3000 && 'new')}>
+        <button className="tkt-stub" onClick={() => openCard(bet.id)} aria-label={`Open bet card for ${bet.sel}`}>
+          <span className="micro">{day}</span>
+          <b className="d">{time}</b>
+          <span className="tkt-id d">{bet.id}</span>
+          <span className="tkt-open"><Ticket size={14} /> Bet card</span>
+        </button>
+        <div className="tkt-body">
+          <div className="tkt-top">
+            <div className="tkt-sel"><b>{bet.sel}</b><span className="meta">{bet.market} · {bet.match}</span></div>
+            {liveChip}
+            <div className="tkt-nums">
+              <div><span className="meta">Odds</span><b className="d">{fmt(bet.odds)}</b></div>
+              <div><span className="meta">Stake</span><b className="d"><Usdt />{money(bet.stake)}</b></div>
+              <div><span className="meta">To return</span><b className="d"><Usdt />{money(bet.stake * bet.odds)}</b></div>
+            </div>
           </div>
-          {action}
+          <div className={cx('tkt-cash', !(offered || cashed) && 'none')}>
+            {(offered || cashed) && <div className="tkt-line">{caption}{line}</div>}
+            {action}
+          </div>
         </div>
-      </div>
+      </article>
     )
+  }
+  // compact layout (side panel, phone sheet): three groups with air between them, one coin per bet
   return (
-    <div className="bet-s">
-      <div className="t"><button className="tk-btn" onClick={() => openCard(bet.id)} aria-label={`Open bet card for ${bet.sel}`}><span><b>{bet.sel}</b> <span className="meta">· {bet.market}</span></span>{ctx}<Ticket className="tk-i" size={15} /></button>{valueBox}</div>
-      <div className="d sums">{fmt(bet.odds)} · <Usdt />{money(bet.stake)} <ArrowRight size={12} /> <Usdt />{money(bet.stake * bet.odds)}</div>
-      {line}
+    <div className={cx('ob', m.live && !lull && 'live')}>
+      <button className="ob-h" onClick={() => openCard(bet.id)} aria-label={`Open bet card for ${bet.sel}`}>
+        <span className="ob-t"><b>{bet.sel}</b><Ticket className="tk-i" size={15} /></span>
+        {liveChip}
+        <span className="meta ob-m">{bet.market} · {bet.match}</span>
+      </button>
+      <div className="ob-nums">
+        <div><span className="meta">Odds</span><b className="d">{fmt(bet.odds)}</b></div>
+        <div><span className="meta">Stake</span><b className="d">{money(bet.stake)}</b></div>
+        <div><span className="meta">To return</span><b className="d">{money(bet.stake * bet.odds)}</b></div>
+      </div>
+      <div className="ob-tear" aria-hidden />
+      {offered && !cashed && <div className="ob-cash">{caption}{line}</div>}
       {action}
     </div>
   )
@@ -407,7 +432,6 @@ export function MyBets({ wide }: { wide?: boolean }) {
       {tab === 'open' ? (
         list.length ? (
           <>
-            {wide && <div className="th micro open"><span>Placed</span><span>Bet</span><span className="n">Odds</span><span className="n">Stake</span><span className="n">To return</span><span className="n">Value</span></div>}
             {list.map((b) => <OpenBet key={b.id} bet={b} wide={wide} />)}
           </>
         ) : (
@@ -424,18 +448,34 @@ export function MyBets({ wide }: { wide?: boolean }) {
             <div><span className="meta">Returned</span><b className="d"><Usdt />{money(returned)}</b></div>
             <div className="bar"><i>{bySport.map(([s, n]) => <u key={s} style={{ flex: n }} />)}</i><span className="meta">{bySport.map(([s, n]) => `${s[0].toUpperCase() + s.slice(1)} ${n}`).join(' · ')}</span></div>
           </div>
-          {wide && <div className="th micro"><span>Placed</span><span>Bet</span><span className="n">Odds</span><span className="n">Stake</span><span className="n">Returns</span><span className="n">Result</span></div>}
           {list.map((b) => wide ? (
-            <div className="tr click" key={b.id} role="button" tabIndex={0} aria-label={`Open bet card for ${b.sel}`} onClick={() => openCard(b.id)} onKeyDown={(e) => e.key === 'Enter' && openCard(b.id)}>
-              <span className="meta">{b.placed.replace(/ (\d\d:)/, '\n$1').split('\n').map((x, i) => <span key={i}>{x}<br /></span>)}</span>
-              <div><b>{b.sel}</b> <span className="meta">· {b.market} · {b.match}</span></div>
-              <span className="n d">{fmt(b.odds)}</span><span className="n d"><Usdt />{money(b.stake)}</span>
-              <span className={cx('n d', !b.returns && 'zero')}><Usdt />{money(b.returns)}</span><span className="n">{tag(b)}</span>
-            </div>
+            <article className={cx('tkt settled click', b.status)} key={b.id} role="button" tabIndex={0} aria-label={`Open bet card for ${b.sel}`} onClick={() => openCard(b.id)} onKeyDown={(e) => e.key === 'Enter' && openCard(b.id)}>
+              <div className="tkt-stub"><span className="micro">{b.placed.slice(0, b.placed.lastIndexOf(' '))}</span><b className="d">{b.placed.slice(b.placed.lastIndexOf(' ') + 1)}</b><span className="tkt-id d">{b.id}</span></div>
+              <div className="tkt-body">
+                <div className="tkt-top">
+                  <div className="tkt-sel"><b>{b.sel}</b><span className="meta">{b.market} · {b.match}</span></div>
+                  {tag(b)}
+                  <div className="tkt-nums">
+                    <div><span className="meta">Odds</span><b className="d">{fmt(b.odds)}</b></div>
+                    <div><span className="meta">Stake</span><b className="d"><Usdt />{money(b.stake)}</b></div>
+                    <div><span className="meta">Returned</span><b className={cx('d', !b.returns && 'zero')}><Usdt />{money(b.returns)}</b></div>
+                  </div>
+                </div>
+              </div>
+            </article>
           ) : (
-            <div className="bet-s settled click" key={b.id} role="button" tabIndex={0} aria-label={`Open bet card for ${b.sel}`} onClick={() => openCard(b.id)} onKeyDown={(e) => e.key === 'Enter' && openCard(b.id)}>
-              <div className="t"><div><b>{b.sel}</b> <span className="meta">· {b.market}</span><div className="meta">{b.match} · {b.placed}</div></div>{tag(b)}</div>
-              <div className="d sums">{fmt(b.odds)} · <Usdt />{money(b.stake)} <ArrowRight size={12} /> <span className={cx(!b.returns && 'zero')}><Usdt />{money(b.returns)}</span></div>
+            <div className="ob settled click" key={b.id} role="button" tabIndex={0} aria-label={`Open bet card for ${b.sel}`} onClick={() => openCard(b.id)} onKeyDown={(e) => e.key === 'Enter' && openCard(b.id)}>
+              <div className="ob-h">
+                <span className="ob-t"><b>{b.sel}</b><Ticket className="tk-i" size={15} /></span>
+                {tag(b)}
+                <span className="meta ob-m">{b.market} · {b.match}</span>
+              </div>
+              <div className="ob-nums">
+                <div><span className="meta">Odds</span><b className="d">{fmt(b.odds)}</b></div>
+                <div><span className="meta">Stake</span><b className="d">{money(b.stake)}</b></div>
+                <div><span className="meta">Returned</span><b className={cx('d', !b.returns && 'zero')}>{money(b.returns)}</b></div>
+              </div>
+              <div className="meta ob-when">Placed {b.placed}</div>
             </div>
           ))}
         </>
@@ -443,5 +483,26 @@ export function MyBets({ wide }: { wide?: boolean }) {
         <Empty title={range === 'today' ? 'Nothing settled today yet' : 'Nothing settled in this range'}><button className="lnk" onClick={() => { setRange('all'); setSport('all') }}>Show all time</button></Empty>
       )}
     </div>
+  )
+}
+
+// My bets page header: the title, and what the open bets add up to right now
+export function BetsHead() {
+  const bets = useApp((s) => s.bets)
+  const sels = useBook((s) => s.sels)
+  const open = bets.filter((b) => b.status === 'open')
+  const staked = open.reduce((a, b) => a + b.stake, 0)
+  const back = open.reduce((a, b) => a + b.stake * b.odds, 0)
+  const value = open.reduce((a, b) => a + (sels[b.selId] ? cashValue(b, sels[b.selId].price) : b.stake), 0)
+  return (
+    <header className="mb-top">
+      <h1 className="title">My bets</h1>
+      <div className="mb-sum" aria-label="Your open bets in total">
+        <div><span className="meta">Open bets</span><b className="d">{open.length}</b></div>
+        <div><span className="meta">Staked</span><b className="d"><Usdt />{money(staked)}</b></div>
+        <div><span className="meta">To return</span><b className="d"><Usdt />{money(back)}</b></div>
+        <div><span className="meta">Value now</span><b className="d"><Usdt />{open.length ? <Price value={+value.toFixed(2)} /> : money(0)}</b></div>
+      </div>
+    </header>
   )
 }
