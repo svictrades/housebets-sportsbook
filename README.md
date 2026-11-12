@@ -2,6 +2,10 @@
 
 A clickable front-end prototype for the Housebets sportsbook design contest. Five linked pages (Sports home, Live, Football, Match page, Bet slip + My bets), built for 390px phones and 1440px desktops. Singles only, decimal odds, stakes in USDT. All fixtures, prices, players and bets are sample data; there is no real money.
 
+## Live
+
+https://svictrades.github.io/housebets-sportsbook/ (no login). Phone-sized preview: https://svictrades.github.io/housebets-sportsbook/phone-preview.html
+
 ## Run
 
     npm install
@@ -12,7 +16,7 @@ A clickable front-end prototype for the Housebets sportsbook design contest. Fiv
 
 `#/` Sports home · `#/live` Live · `#/football` Football · `#/match/ars-bha` Match page · `#/bets` Bet slip + My bets
 
-Reviewer shortcuts: the **Scenes** button (bottom of the left rail, or the Menu tab on phones) triggers a goal, a penalty check, a price change, a suspension, a failed bet, a declined cash-out and a "nothing live" state. Deep links: `#/match/ars-bha?scene=goal`, `#/match/ars-bha?scene=slip`, `#/live?scene=lull`, `#/?scene=profile`, `#/?scene=demo`, `#/?rail=open`, `#/?panel=closed`. `phone-preview.html` shows the app in a 390px frame.
+Reviewer shortcuts: **Demo controls** (bottom of the side panel, the `.` key, or the Menu tab on phones) triggers a goal, a penalty check, a price change, a suspension, a failed bet, a declined cash-out and a "nothing live" state. Deep links: `#/match/ars-bha?scene=goal`, `#/match/ars-bha?scene=slip`, `#/live?scene=lull`, `#/?scene=profile`, `#/?scene=demo`, `#/?rail=open`, `#/?panel=closed`. `phone-preview.html` shows the app in a 390px frame.
 
 ## Credits
 
