@@ -304,7 +304,7 @@ export function reopenMatch(matchId: string, sigma = 0.07, bias?: (s: Sel) => nu
 export function scoreGoal(matchId: string, side: 0 | 1) {
   const m0 = G().matches[matchId]
   if (!m0 || m0.pause || !m0.live || m0.period === 'FT') return
-  suspendMatch(matchId, 'Possible goal')
+  suspendMatch(matchId, 'Goal check') // one wording per reason everywhere (plan D6)
   setTimeout(() => {
     const st = G()
     const m = st.matches[matchId]
@@ -312,7 +312,10 @@ export function scoreGoal(matchId: string, side: 0 | 1) {
     const team = TEAMS[side === 0 ? m.fx.home : m.fx.away].short
     const min = m.period === 'HT' ? 45 : minuteOf(m)
     const text = `Goal · ${team} · ${min}'`
-    S({ matches: { ...st.matches, [matchId]: { ...m, score, goals: [...m.goals, { m: m.x, side }], pause: { reason: `${text} · repricing`, since: m.pause?.since ?? Date.now() }, note: { text, until: Date.now() + 12000 } } } })
+    // the goal is on the board: the markets stop saying "Goal check" and read "Goal" until they reopen (home-live-20)
+    const mk1 = { ...st.mkts }
+    for (const k of Object.keys(mk1)) if (mk1[k].match === matchId && !mk1[k].closed && mk1[k].sus) mk1[k] = { ...mk1[k], sus: { ...mk1[k].sus!, reason: 'Goal' } }
+    S({ mkts: mk1, matches: { ...st.matches, [matchId]: { ...m, score, goals: [...m.goals, { m: m.x, side }], pause: { reason: text, since: m.pause?.since ?? Date.now() }, note: { text, until: Date.now() + 12000 } } } })
     window.dispatchEvent(new CustomEvent('hb-goal', { detail: { matchId, text: `Goal · ${TEAMS[m.fx.home].short} ${score[0]}–${score[1]} ${TEAMS[m.fx.away].short} · ${min}'` } }))
     setTimeout(() => {
       const now = Date.now()

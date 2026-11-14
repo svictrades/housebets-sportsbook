@@ -39,11 +39,12 @@ export const TEAMS: Record<string, Team> = Object.fromEntries(
     t('rbl', 'RB Leipzig', 'Leipzig', '#eef0f2', '#d1203f'),
     t('lev', 'Bayer Leverkusen', 'Leverkusen', '#d1203f', '#16181c'),
     t('fra', 'Eintracht Frankfurt', 'Frankfurt', '#16181c', '#eef0f2'),
-    // fictional players and teams for other sports
+    // fictional players and teams for other sports (ids are kept as routes; a few display names were changed
+    // away from famous surnames, so an id such as 'keane' no longer matches the name shown)
     t('varga', 'R. Varga', 'R. Varga', '#3ddc97', '#0e3a2a'),
     t('holm', 'T. Holm', 'T. Holm', '#f5b544', '#4a3408'),
     t('ibarra', 'C. Ibarra', 'C. Ibarra', '#ff8a65', '#4a1f10'),
-    t('keane', 'D. Keane', 'D. Keane', '#7cc4ee', '#10324a'),
+    t('keane', 'D. Kearon', 'D. Kearon', '#7cc4ee', '#10324a'),
     t('lund', 'S. Lund', 'S. Lund', '#c77dff', '#2e1248'),
     t('amadi', 'O. Amadi', 'O. Amadi', '#f0c94a', '#3d3208'),
     t('owls', 'Harbour City Owls', 'Owls', '#2f7de1', '#f5b544'),
@@ -54,11 +55,11 @@ export const TEAMS: Record<string, Team> = Object.fromEntries(
     t('ember', 'Ember Collective', 'Ember', '#ff8a65', '#16181c'),
     t('quartz', 'Quartz Five', 'Quartz', '#c77dff', '#eef0f2'),
     t('tidal', 'Tidal Esports', 'Tidal', '#3ddc97', '#16181c'),
-    t('petrov', 'M. Petrov', 'M. Petrov', '#e24a2c', '#3a120a'),
+    t('petrov', 'M. Ostrin', 'M. Ostrin', '#e24a2c', '#3a120a'),
     t('sato', 'K. Sato', 'K. Sato', '#eef0f2', '#d1203f'),
     t('duarte', 'L. Duarte', 'L. Duarte', '#2e9b6f', '#f5c400'),
     t('nyberg', 'E. Nyberg', 'E. Nyberg', '#2f7de1', '#f5c400'),
-    t('okoye', 'A. Okoye', 'A. Okoye', '#1f8a4c', '#eef0f2'),
+    t('okoye', 'A. Udebra', 'A. Udebra', '#1f8a4c', '#eef0f2'),
     t('comets', 'Eastfield Comets', 'Comets', '#c77dff', '#16181c'),
     t('giants', 'Ironbridge Giants', 'Giants', '#8f9aa8', '#e24a2c'),
     t('rays', 'Bayside Rays', 'Rays', '#02c8d8', '#f5b544'),
@@ -80,7 +81,7 @@ export const COMPS: Record<string, Comp> = Object.fromEntries(
       { id: 'seriea', name: 'Serie A', sport: 'football', country: 'Italy', flag: ['#1f8a4c', '#f3f3f5', '#d1203f'], color: '#27b6a1' },
       { id: 'bundes', name: 'Bundesliga', sport: 'football', country: 'Germany', flag: ['#16181c', '#d1203f', '#f5c400'], color: '#e84a5f' },
       { id: 'lisbon', name: 'Lisbon Indoor', sport: 'tennis', country: 'Sample tour', flag: ['#1f8a4c', '#d1203f', '#d1203f'], color: '#3ddc97' },
-      { id: 'coastal', name: 'Coastal League', sport: 'basketball', country: 'Sample league', flag: ['#2f7de1', '#f5b544', '#2f7de1'], color: '#f5b544' },
+      { id: 'coastal', name: 'Shoreline League', sport: 'basketball', country: 'Sample league', flag: ['#2f7de1', '#f5b544', '#2f7de1'], color: '#f5b544' },
       { id: 'harbour', name: 'Harbour Open', sport: 'tennis', country: 'Sample tour', flag: ['#2f7de1', '#eef0f2', '#2f7de1'], color: '#7cc4ee' },
       { id: 'summit', name: 'Summit Conference', sport: 'basketball', country: 'Sample league', flag: ['#c77dff', '#16181c', '#c77dff'], color: '#c77dff' },
       { id: 'circuit', name: 'Circuit Finals', sport: 'esports', country: 'Sample cup', flag: ['#f5c400', '#16181c', '#f5c400'], color: '#f5c400' },
@@ -162,24 +163,24 @@ export const FIXTURES: Fixture[] = [
 ]
 
 export const PLAYERS: { name: string; team: string; any: number; next: number; two: number }[] = ([
-  ['T. Okafor', 'ars', 2.1, 4.5, 7.5],
-  ['L. Brandt', 'ars', 2.6, 5.5, 10],
-  ['M. Sorensen', 'ars', 3.1, 7, 13],
-  ['K. Marsh', 'bha', 4.2, 9, 21],
-  ['D. Achebe', 'ars', 4.5, 9.5, 23],
+  ['T. Okonkaro', 'ars', 2.1, 4.5, 7.5],
+  ['L. Brandvik', 'ars', 2.6, 5.5, 10],
+  ['M. Sevrin', 'ars', 3.1, 7, 13],
+  ['K. Pendry', 'bha', 4.2, 9, 21],
+  ['D. Abelard', 'ars', 4.5, 9.5, 23],
   ['E. Lindqvist', 'bha', 5, 11, 26],
   ['R. Calloway', 'ars', 5.5, 12, 29],
-  ['P. Onuoha', 'bha', 6, 13, 31],
-  ['J. Vidal', 'ars', 6.5, 14, 34],
-  ['S. Ferreira', 'bha', 7, 15, 36],
+  ['P. Nwosika', 'bha', 6, 13, 31],
+  ['J. Valdero', 'ars', 6.5, 14, 34],
+  ['S. Ferrandi', 'bha', 7, 15, 36],
   ['A. Whitlock', 'ars', 8, 17, 41],
   ['N. Castellan', 'bha', 8.5, 18, 46],
-  ['B. Okoro', 'ars', 9, 19, 51],
+  ['B. Odenwa', 'ars', 9, 19, 51],
   ['H. Drummond', 'bha', 10, 21, 56],
   ['C. Aalto', 'ars', 12, 26, 67],
   ['F. Moreau', 'bha', 13, 29, 71],
-  ['G. Tanaka', 'ars', 15, 34, 81],
-  ['I. Reyes', 'bha', 17, 36, 91],
+  ['G. Hoshiba', 'ars', 15, 34, 81],
+  ['I. Arroyal', 'bha', 17, 36, 91],
 ] as [string, string, number, number, number][]).map(([name, team, any, next, two]) => ({ name, team, any, next, two }))
 
 // ---- markets -------------------------------------------------------------
@@ -207,8 +208,10 @@ const ouLines = (lines: [string, number, number][], over = 'Over', under = 'Unde
     { key: `u${l}`, name: `${under} ${l}`, price: u, line: l },
   ])
 // one minus glyph everywhere a handicap is shown
-const hcap = (l: number) => (l > 0 ? '+' : '−') + Math.abs(l).toFixed(1)
-const hkey = (l: number) => (l > 0 ? '+' : '-') + Math.abs(l).toFixed(1)
+// (whole and half lines only, one decimal: −1.0, −1.5)
+const hdec = (l: number) => Math.abs(l).toFixed((l * 4) % 2 ? 2 : 1)
+const hcap = (l: number) => (l > 0 ? '+' : '−') + hdec(l)
+const hkey = (l: number) => (l > 0 ? '+' : '-') + hdec(l)
 
 // Double chance and Draw no bet are always read off the Match result prices, so the three never disagree.
 // dcPrice(a, b, c): the price of "a or b" in a three-way market whose third outcome is c; never longer than a or b alone
@@ -282,15 +285,22 @@ function states(st: FbState, lam: [number, number]) {
   return out
 }
 
-// fictional surnames for the goalscorer lists (no real players anywhere in the book)
-const NAMES = 'Adeyemi Barros Calder Dvorak Eklund Farrow Galvan Hartley Ilves Jovic Kessler Lindahl Marek Novak Oduya Pires Quist Rahimi Soler Tamm Ulloa Varela Wendt Ximenes Yilmaz Zeller Abara Brandao Cisse Dahl Engel Fontaine Greco Halvorsen Imani Jansen Kovac Lemaire Mbeki Nilsen Okonjo Pavlov Rask Sandoval Teixeira Udoka Vasquez Weller'.split(' ')
+// Invented surnames for the goalscorer lists. No real players anywhere in the book: every name here was chosen to be
+// unlike any well-known footballer (famous surnames avoided entirely), with a mix of origins. Keep it that way.
+const NAMES = ('Ashcombe Fairlow Pendrell Wrenfold Kestrell Harrowby Solvberg Fjellsen Holmvik Eskdahl Ruskelund Ostgaard Brandvoort Kessling Hollweide Ternhoven Vossmann Ackerlin Dumarais Rocheval Beaulard Vaillanet Lacombier Arrendo Belmira Castrejo Olivano Sedrano Vilaroca Quinterro Vescari Montarsi Bellosi Carvezzi Rezanko Pelinski Morvatek Dravenko Odunmbe Achuzie Nwabaro Mbatoli Osagwe Oyelaran Yalvaran Tasoglan Okumiya Nazemi' +
+  ' Brackwell Dunholt Gorsedge Hethersall Pellowe Quarley Rookwood Thackwell Wrayburn Sandvold Fossnes Tveitan Myrstad Vikholm Overdijk Brinkhorst Stellmann Dornacher Heyligen Kranzbach Wittenau Chasseral Desmarel Lavergnac Monteray Peyrolle Rivolet Aldarete Barrocal Cerezal Escarra Montijano Pardinho Valcorba Fioravelli Lombrini Pezzolato Strambini Brezanek Kovarny Lesnovic Radomirov Vukmerov Abiodane Chukwemba Ekwuaro Nkemdiri Tchakoume Ozbaran Haddari Rahimzad Morisawa Yonekawa').split(' ')
 const hash = (s: string) => { let h = 7; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h }
+// Each club takes its own block of six surnames from the pool, so a surname turns up at two clubs at most, and a
+// club that has a hand-written squad (Arsenal, Brighton) uses those same players in every match it plays.
+const TEAM_IX = Object.keys(TEAMS)
 const squad = (team: string, taken: string[] = []) => {
-  const h = hash(team)
+  const own = PLAYERS.filter((p) => p.team === team).map((p) => p.name)
+  if (own.length >= 6) return own.filter((n) => !taken.includes(n)).slice(0, 6)
+  const start = TEAM_IX.indexOf(team) * 6
   const out: string[] = []
   for (let i = 0; out.length < 6; i++) {
-    const sur = NAMES[(h + i * 11) % NAMES.length]
-    if (!taken.some((t) => t.endsWith(sur)) && !out.some((t) => t.endsWith(sur))) out.push(`${'ABCDEFGHJKLMNOPRST'[(h >> (out.length * 3)) % 18]}. ${sur}`)
+    const sur = NAMES[((start + i) * 17) % NAMES.length] // ×17 spreads a block across the pool, so squads mix origins
+    if (!taken.some((t) => t.endsWith(sur)) && !out.some((t) => t.endsWith(sur))) out.push(`${'ABCDEFGHJKLMNOPRST'[hash(team + sur) % 18]}. ${sur}`)
   }
   return out
 }
@@ -312,12 +322,23 @@ export function footballMarkets(fx: Fixture, st: FbState, lam: [number, number],
     const ls = lines(key, fresh)
     return { key, name, tabs, kind: 'line', lines: ls.map((l) => l.toFixed(1)), note: 'Over / Under', sels: ls.flatMap((l) => { const p = over(l), t = l.toFixed(1); return [S(`o${t}`, `Over ${t}`, p, 1.06, t), S(`u${t}`, `Under ${t}`, 1 - p, 1.06, t)] }), ...x }
   }
-  const hc = (key: string, name: string, tabs: string[], fresh: number[], cover: (l: number) => number): MarketDef => {
+  // Asian handicap on a goal margin. A whole line (−1) gives the stake back on a tie; a quarter line (−0.75) is half
+  // the stake on each neighbour (−0.5 and −1). `ahP` returns the chance each side wins with pushes taken out.
+  const ahP = (margin: (a: number, b: number, c: number, d: number) => number) => (l: number): [number, number] => {
+    const parts = (l * 4) % 2 ? [l - 0.25, l + 0.25] : [l]
+    let W = 0, L = 0
+    for (const x of parts) { W += P((a, b, c, d) => margin(a, b, c, d) + x > 0) / parts.length; L += P((a, b, c, d) => margin(a, b, c, d) + x < 0) / parts.length }
+    return W + L < 1e-9 ? [0.5, 0.5] : [W / (W + L), L / (W + L)]
+  }
+  const hc = (key: string, name: string, tabs: string[], fresh: number[], cover: (l: number) => [number, number]): MarketDef => {
     const ls = lines(key, fresh)
-    return { key, name, tabs, kind: 'line', lines: ls.map(hcap), note: 'Handicap line', sels: ls.flatMap((l) => { const p = cover(l); return [S(`h${hkey(l)}`, `${H} ${hcap(l)}`, p, 1.06, hcap(l)), S(`a${hkey(l)}`, `${A} ${hcap(-l)}`, 1 - p, 1.06, hcap(l))] }) }
+    return { key, name, tabs, kind: 'line', lines: ls.map(hcap), note: 'Handicap line', sels: ls.flatMap((l) => { const [p, q] = cover(l); return [S(`h${hkey(l)}`, `${H} ${hcap(l)}`, p, 1.06, hcap(l)), S(`a${hkey(l)}`, `${A} ${hcap(-l)}`, q, 1.06, hcap(l))] }) }
   }
   const pH = P((a, b, c, d) => a + c > b + d), pD = P((a, b, c, d) => a + c === b + d), pA = 1 - pH - pD
-  const mo = seed ? fx.odds : [px(pH), px(pD), px(pA)]
+  // Match result after a goal: the margin shrinks as a price shortens (implied = p·(1 + 2·(m−1)·(1−p))), so a side
+  // at 95% reads about 1.05 rather than sitting on the 1.01 floor (match-page-19). Never above 100% implied.
+  const pxr = (p: number) => ladder(1 / Math.max(p * (1 + 0.12 * (1 - p)), 1e-6))
+  const mo = seed ? fx.odds : [pxr(pH), pxr(pD), pxr(pA)]
   const T = lam[0] + lam[1]
   const none = Math.exp(-T)
   // players
@@ -336,8 +357,15 @@ export function footballMarkets(fx: Fixture, st: FbState, lam: [number, number],
   if (seed && fx.ou && cur < 3) tg.sels = tg.sels.map((s) => (s.key === 'o2.5' ? { ...s, price: fx.ou![0] } : s.key === 'u2.5' ? { ...s, price: fx.ou![1] } : s))
   const pBtts = P((a, b, c, d) => a + c > 0 && b + d > 0)
   const bt = seed && fx.btts && sh * sa === 0 ? fx.btts : [px(pBtts), px(1 - pBtts)]
-  let c0 = -0.5, best = 9
-  for (let l = -3.5; l <= 3.5; l++) { const p = Math.abs(P((a, b, c, d) => a + c - b - d + l > 0) - 0.5); if (p < best) { best = p; c0 = l } }
+  // Asian handicap lines. ±0.5 is never offered (−0.5 is the Match result and +0.5 is Double chance under another
+  // name, match-page-19), nor 0 (Draw no bet). Whole and half lines only: quarter lines (−0.25, −0.75) split the stake
+  // in two and need explaining, which a player should never have to ask for. The three on offer sit around the most even one.
+  const ahFull = ahP((a, b, c, d) => a + c - b - d)
+  const AHL = [-3.5, -3, -2.5, -2, -1.5, -1, 1, 1.5, 2, 2.5, 3, 3.5]
+  let ci = 5, best = 9
+  AHL.forEach((l, i) => { const p = Math.abs(ahFull(l)[0] - 0.5); if (p < best) { best = p; ci = i } })
+  ci = Math.min(AHL.length - 2, Math.max(1, ci))
+  const ahFresh = [AHL[ci - 1], AHL[ci], AHL[ci + 1]]
   const fav = pH >= pA ? 0 : 1
   const egNs = [...new Set([...Array.from({ length: Math.max(0, 6 - cur) }, (_, i) => cur + i), ...(prev?.eg ?? []).filter((k) => !k.endsWith('p')).map((k) => parseInt(k.slice(1)))])].sort((a, b) => a - b)
   const csSet = new Map<string, [number, number]>()
@@ -366,12 +394,12 @@ export function footballMarkets(fx: Fixture, st: FbState, lam: [number, number],
     { key: 'h2b', name: '2nd half both teams to score', tabs: ['Halves'], kind: 'row', sels: (() => { const p = P((_a, _b, c, d) => c > 0 && d > 0); return [S('y', 'Yes', p), S('n', 'No', 1 - p)] })() },
     { key: 'htft', name: 'Half time / full time', tabs: ['Halves'], kind: htft.filter((s) => !s.settled).length > 3 ? 'list' : 'row', note: st.min >= 45 ? `HT: ${h1 > a1 ? H : h1 < a1 ? A : 'Draw'}` : undefined, sels: htft },
     { key: 'hsh', name: 'Highest scoring half', tabs: ['Halves'], kind: 'row', sels: [S('1', '1st half', P((a, b, c, d) => a + b > c + d)), S('t', 'Tie', P((a, b, c, d) => a + b === c + d)), S('2', '2nd half', P((a, b, c, d) => a + b < c + d))] },
-    hc('ah', 'Asian handicap', ['Handicaps'], [c0 - 1, c0, c0 + 1], (l) => P((a, b, c, d) => a + c - b - d + l > 0)),
+    hc('ah', 'Asian handicap', ['Handicaps'], ahFresh, ahFull),
     { key: 'h3', name: 'Handicap (3-way)', tabs: ['Handicaps'], kind: 'row', note: `${fav ? A : H} start one goal down`, sels: fav === 0
       ? [S('h', `${H} −1`, P((a, b, c, d) => a + c - b - d >= 2)), S('d', `Draw (${H} −1)`, P((a, b, c, d) => a + c - b - d === 1)), S('a', `${A} +1`, P((a, b, c, d) => a + c - b - d <= 0))]
       : [S('h', `${H} +1`, P((a, b, c, d) => b + d - a - c <= 0)), S('d', `Draw (${A} −1)`, P((a, b, c, d) => b + d - a - c === 1)), S('a', `${A} −1`, P((a, b, c, d) => b + d - a - c >= 2))] },
     { key: 'dnb', name: 'Draw no bet', tabs: ['Handicaps'], kind: 'row', note: 'Stake back on a draw', sels: [S('h', H, pH, 1, undefined, dnbPrice(mo[0], mo[2])), S('a', A, pA, 1, undefined, dnbPrice(mo[2], mo[0]))] },
-    hc('ah2', '2nd half Asian handicap', ['Handicaps'], [-0.5, 0.5], (l) => P((_a, _b, c, d) => c - d + l > 0)),
+    hc('ah2', '2nd half Asian handicap', ['Handicaps'], [-1, 1], ahP((_a, _b, c, d) => c - d)), // not ±0.5: that is the 2nd half result again
     { key: 'ngs', name: 'Next goalscorer', tabs: ['Goalscorers'], kind: 'list', sels: [...pl((m) => (m / (T || 1)) * (1 - none)), S('none', 'No goalscorer', none)] },
     { key: 'two', name: 'To score 2 or more', tabs: ['Goalscorers'], kind: 'list', sels: pl((m) => 1 - Math.exp(-m) * (1 + m)).filter((x) => !seed || x.price < 101) },
   ]
@@ -422,21 +450,48 @@ function build(fx: Fixture): MarketDef[] {
   const p = 1 / fx.odds[0] / (1 / fx.odds[0] + 1 / fx.odds[1]) // home win chance with the margin taken out
   const px2 = (q: number) => Math.max(1.01, +(1 / (Math.min(0.985, Math.max(0.015, q)) * 1.06)).toFixed(2))
   const pair = (l: number, q: number) => [{ key: `h${hkey(l)}`, name: `${H} ${hcap(l)}`, price: px2(q), line: hcap(l) }, { key: `a${hkey(l)}`, name: `${A} ${hcap(-l)}`, price: px2(1 - q), line: hcap(l) }]
-  // a handicap on a continuous margin (games, points): three lines around the fair one
+  // a handicap on a continuous margin (games, points): three lines around the fair one, in ascending order.
+  // ±0.5 is never offered: in basketball it is the Match winner again, and in tennis it reads as one (sport-pages-11).
+  const HL = [-9.5, -8.5, -7.5, -6.5, -5.5, -4.5, -3.5, -2.5, -1.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5]
   const spread = (name: string, note: string, margin: number, scale: number): MarketDef => {
-    const c = -(Math.floor(Math.abs(margin)) + 0.5) * (margin >= 0 ? 1 : -1)
-    const ls = [c + 1, c, c - 1]
+    let ci = 0
+    HL.forEach((l, i) => { if (Math.abs(margin + l) < Math.abs(margin + HL[ci])) ci = i })
+    const c = HL[ci]
+    ci = Math.min(HL.length - 2, Math.max(1, ci))
+    const ls = [HL[ci - 1], HL[ci], HL[ci + 1]]
     return { key: 'hc', name, tabs: ['Popular'], kind: 'line', note, lines: ls.map(hcap), defLine: hcap(c), sels: ls.flatMap((l) => pair(l, 1 / (1 + Math.exp(-(margin + l) / scale)))) }
+  }
+  // a total on a continuous count (games, points): the main line sits on this match's own expected total, so every
+  // match reads differently (sport-pages-12); lines ascending, priced from the same curve
+  const jit = ((hash(fx.id) % 1000) / 1000 - 0.5) // the same small per-match offset on every load, −0.5…0.5
+  const total = (key: string, name: string, expect: number, scale: number): MarketDef => {
+    const c = Math.round(expect - 0.5) + 0.5
+    const ls = [c - 1, c, c + 1]
+    const ov = (l: number) => 1 / (1 + Math.exp(-(expect - l) / scale))
+    return { key, name, tabs: ['Popular'], kind: 'line', lines: ls.map((l) => l.toFixed(1)), defLine: c.toFixed(1), sels: ouLines(ls.map((l): [string, number, number] => [l.toFixed(1), px2(ov(l)), px2(1 - ov(l))])) }
   }
   const near = (x: number) => +(1.9 + (x - 1.9) * 0.35).toFixed(2)
   const two = (key: string, name: string): MarketDef => ({ key, name, tabs: ['Popular'], kind: 'row', sels: [{ key: 'h', name: H, price: near(fx.odds[0]) }, { key: 'a', name: A, price: near(fx.odds[1]) }] })
   if (fx.sport === 'tennis') return [main,
     spread('Games handicap', 'Games won across the match', (p - 0.5) * 12, 2.6),
-    { key: 'games', name: 'Total games', tabs: ['Popular'], kind: 'line', lines: ['20.5', '21.5', '22.5'], defLine: '21.5', sels: ouLines([['20.5', 1.6, 2.3], ['21.5', 1.87, 1.93], ['22.5', 2.25, 1.62]]) },
+    total('games', 'Total games', (() => {
+      // best of three sets: closer matches run longer; a live match counts the games already played
+      const full = 22.6 - 14 * Math.abs(p - 0.5) + jit * 1.6
+      const played = (fx.live?.sets ?? '').split(' ').filter(Boolean).reduce((a, x) => a + x.split('-').reduce((b, n) => b + +n, 0), 0)
+      return fx.live ? Math.max(full, played + 7) : full
+    })(), 2.2),
     two('set', 'Current set winner')]
   if (fx.sport === 'basketball') return [main,
     spread('Handicap', 'Points, including overtime', (p - 0.5) * 30, 6.5),
-    { key: 'pts', name: 'Total points', tabs: ['Popular'], kind: 'line', lines: ['158.5', '160.5', '162.5'], defLine: '160.5', sels: ouLines([['158.5', 1.72, 2.08], ['160.5', 1.9, 1.9], ['162.5', 2.08, 1.72]]) }]
+    total('pts', 'Total points', (() => {
+      // four 10-minute quarters; each match has its own pace, and a live game blends the pace it is actually running at
+      const base = 161 + jit * 18
+      const q = /^Q(\d) (\d+):(\d+)/.exec(fx.live?.period ?? '')
+      if (!q || !fx.live) return base
+      const gone = Math.min(39, (+q[1] - 1) * 10 + 10 - (+q[2] + +q[3] / 60))
+      const pts = fx.live.score[0] + fx.live.score[1]
+      return pts + (40 - gone) * (0.35 * (pts / Math.max(1, gone)) + 0.65 * (base / 40))
+    })(), 7)]
   // esports, best of three maps: find the chance of winning one map that gives this chance of winning the match
   let lo = 0, hi = 1
   for (let i = 0; i < 30; i++) { const q = (lo + hi) / 2; if (q * q * (3 - 2 * q) < p) lo = q; else hi = q }

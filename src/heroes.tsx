@@ -6,7 +6,7 @@ import { useBook } from './book'
 import type { Sport } from './data'
 
 type View = (x: number, y: number, z: number) => [number, number, number, number]
-type Ctx = { ctx: CanvasRenderingContext2D; w: number; h: number; now: number; t: number; still: boolean; V: View; S: number; cx: number; gy: number; phone: boolean }
+type Ctx = { ctx: CanvasRenderingContext2D; w: number; h: number; now: number; t: number; still: boolean; V: View; S: number; cx: number; gy: number; phone: boolean; clear: number }
 // one fade for a whole figure, so a scene can put its player away and bring it back
 let GA = 1
 
@@ -98,6 +98,11 @@ const pose = (lean: number, lt: number, lk: number, rt: number, rk: number, la: 
 const LEN = { torso: 8.2, neck: 3.5, head: 1.75, thigh: 6.8, shin: 6.8, foot: 2.1, arm: 5, fore: 4.6, hip: 1.5, sh: 2.5 }
 const smooth = (k: number) => { const u = Math.max(0, Math.min(1, k)); return u * u * (3 - 2 * u) }
 const lerp = (a: number, b: number, k: number) => a + (b - a) * k
+// Keep-out: `clear` is the right edge of the header text plus 24px. Balls and rings fade to nothing before they reach it,
+// so nothing is ever drawn under the title or the counters, at any width.
+const keep = (c: Ctx, x: number) => smooth((x - c.clear) / 40)
+// every figure plays once, then waits in its ready pose for this long before the next cycle (football already did)
+const REST = 8
 function between(keys: [number, Pose][], t: number): Pose {
   if (t <= keys[0][0]) return keys[0][1]
   for (let i = 1; i < keys.length; i++) {
@@ -203,7 +208,7 @@ function football(c: Ctx) {
   const [sx, sz] = turn(hips[0], hips[2])
   shadow(c, sx, sz, 9)
   const [rx, rz] = turn(rest[0], rest[2])
-  if (struck && fly < 1.3) ring(c, rx, rz, 3 + fly * 26, 0.5 * (1 - fly / 1.3) * GA)
+  if (struck && fly < 1.3) ring(c, rx, rz, 3 + fly * 12, 0.35 * (1 - fly / 1.3) * GA)
   const pts = kick.joints.map((_, i) => P(joint(i)))
   const parts: Part[] = []
   const hipZ = pts[0][2]
@@ -225,16 +230,18 @@ function football(c: Ctx) {
     if (a > 0.02) {
       const y = Math.max(R, R + 30 * fly - 15 * fly * fly)
       const B = P([rest[0] + kick.dir[0] * 62 * fly, y, rest[2] + kick.dir[1] * 62 * fly])
-      parts.push({ z: B[2], run: () => ball(ctx, B[0], B[1], R * B[3], a * GA, -fly * 7, 'football') })
+      const ak = a * GA * keep(c, B[0])
+      if (ak > 0.02) parts.push({ z: B[2], run: () => ball(ctx, B[0], B[1], R * B[3], ak, -fly * 7, 'football') })
     }
     // a new ball rolls back to the same spot and stops at his feet
     const k = (t - T_KICK - T_SETTLE - 0.3) / 1.7
     if (k > 0) {
       const e = 1 - Math.pow(1 - Math.min(1, k), 3)
-      const x = rx - 62 * (1 - e)
+      const x = rx - 30 * (1 - e)
       const B = c.V(x, R, rz)
-      shadow(c, x, rz, 2.4, 0.45 * Math.min(1, k * 3))
-      parts.push({ z: B[2], run: () => ball(ctx, B[0], B[1], R * B[3], Math.min(1, k * 3) * GA, (62 * e) / R, 'football') })
+      const ak = Math.min(1, k * 3) * keep(c, B[0])
+      shadow(c, x, rz, 2.4, 0.45 * ak)
+      if (ak > 0.02) parts.push({ z: B[2], run: () => ball(ctx, B[0], B[1], R * B[3], ak * GA, (30 * e) / R, 'football') })
     }
   }
   paint(parts)
@@ -256,31 +263,39 @@ function racket(g: Rig): { hand: P3; tip: P3; centre: P3 } {
 }
 function tennis(c: Ctx) {
   const { ctx } = c
-  const t = c.still ? TN_HIT + 0.16 : c.t % TN_T
+  const raw = c.t % (TN_T + REST)
+  const t = c.still ? TN_HIT + 0.16 : Math.min(raw, TN_T)
   const px = 12, net = -26
-  const bob = c.still ? 0 : Math.abs(Math.sin(c.now / 260)) * 0.5
+  // on his toes around the rally; while he waits the bounce settles into slow breathing
+  const calm = raw > TN_T ? smooth((raw - TN_T) / 0.5) : 1 - smooth(raw / 0.5)
+  const bob = c.still ? 0 : lerp(Math.abs(Math.sin(c.now / 260)) * 0.5, (Math.sin(c.now / 900) + 1) * 0.1, calm)
   const p = between([[0, TN.ready], [0.55, TN.ready], [0.98, TN.back], [TN_HIT, TN.hit], [TN_HIT + 0.32, TN.follow], [2.1, TN.ready], [TN_T, TN.ready]], t)
   const idle = t < 0.55 || t > 2.1
   const g = rig({ ...p, air: idle ? bob : 0 }, px, -1)
   const meet = racket(rig(TN.hit, px, -1)).centre
   // net: posts, tape and a few strings
-  shadow(c, net, 0, 8, 0.3)
-  for (let i = 0; i <= 6; i++) { const z = -9 + i * 3; line3(c, [net, 0, z], [net, NET_H, z], `rgba(2,248,248,${0.13 + i * 0.025})`, 1) }
-  for (let j = 1; j <= 5; j++) line3(c, [net, j * 1.4, -9], [net, j * 1.4, 9], 'rgba(2,248,248,.12)', 1)
-  const a = c.V(net, NET_H, -9), b = c.V(net, NET_H, 9)
-  capsule(ctx, a[0], a[1], b[0], b[1], 0.5 * a[3])
   const p1 = c.V(net, 0, 9), p2 = c.V(net, NET_H + 0.6, 9)
   const p3 = c.V(net, 0, -9), p4 = c.V(net, NET_H + 0.6, -9)
-  capsule(ctx, p3[0], p3[1], p4[0], p4[1], 0.62 * p3[3], 0.6)
-  capsule(ctx, p1[0], p1[1], p2[0], p2[1], 0.62 * p1[3])
+  // the net stands whole or not at all: it fades out only where the header text would run into it (very narrow screens)
+  const nk = smooth((Math.min(p1[0], p3[0]) - (c.clear - 24)) / 24)
+  if (nk > 0.02) {
+    shadow(c, net, 0, 8, 0.3 * nk)
+    for (let i = 0; i <= 6; i++) { const z = -9 + i * 3; line3(c, [net, 0, z], [net, NET_H, z], `rgba(2,248,248,${(0.13 + i * 0.025) * nk})`, 1) }
+    for (let j = 1; j <= 5; j++) line3(c, [net, j * 1.4, -9], [net, j * 1.4, 9], `rgba(2,248,248,${0.12 * nk})`, 1)
+    const a = c.V(net, NET_H, -9), b = c.V(net, NET_H, 9)
+    capsule(ctx, a[0], a[1], b[0], b[1], 0.5 * a[3], nk)
+    capsule(ctx, p3[0], p3[1], p4[0], p4[1], 0.62 * p3[3], 0.6 * nk)
+    capsule(ctx, p1[0], p1[1], p2[0], p2[1], 0.62 * p1[3], nk)
+  }
   // the ball: in over the net, one bounce, met by the racket, and back out behind the title
   const bounceX = meet[0] - 13, T_B = 0.74
   let bx: number, by: number, ba = 1
   if (t < T_B) { const k = t / T_B, u = 0.35 + 0.65 * k; bx = lerp(meet[0] - 76, bounceX, k); by = 0.9 + 14 * 4 * u * (1 - u); ba = Math.min(1, k * 3) }
   else if (t < TN_HIT) { const k = (t - T_B) / (TN_HIT - T_B); bx = lerp(bounceX, meet[0], k); by = 0.9 + (meet[1] - 0.9) * Math.sin((k * Math.PI) / 2) }
   else { const u = (t - TN_HIT) / 1.15; bx = meet[0] - 88 * u; by = Math.max(0.9, meet[1] + 2 * u - 20 * u * u); ba = Math.max(0, 1 - Math.max(0, u - 0.45) / 0.5) }
-  if (!c.still && t >= T_B && t < T_B + 0.7) { const k = (t - T_B) / 0.7; ring(c, bounceX, meet[2], 2 + k * 14, 0.5 * (1 - k)) }
-  if (!c.still && t >= TN_HIT && t < TN_HIT + 0.45) { const k = (t - TN_HIT) / 0.45; const m = c.V(meet[0], meet[1], meet[2]); ctx.strokeStyle = `rgba(196,244,241,${0.6 * (1 - k)})`; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(m[0], m[1], (2 + k * 7) * m[3], 0, 7); ctx.stroke() }
+  ba *= keep(c, c.V(bx, by, meet[2])[0])
+  if (!c.still && t >= T_B && t < T_B + 0.7) { const k = (t - T_B) / 0.7; ring(c, bounceX, meet[2], 2 + k * 14, 0.5 * (1 - k) * keep(c, c.V(bounceX, 0, meet[2])[0])) }
+  // (the pale ring that used to mark the contact is gone: the ball leaving the strings says it)
   const [gx] = g.hip
   shadow(c, gx, 0, 8.5)
   if (ba > 0.02) shadow(c, bx, meet[2], 2.2, 0.45 * ba)
@@ -316,7 +331,7 @@ const BK = {
 const BK_T = 4.8, BK_REL = 0.98, BK_FLY = 1.0, BK_CATCH = 3.6
 function basketball(c: Ctx) {
   const { ctx } = c
-  const t = c.still ? BK_REL + 0.42 : c.t % BK_T
+  const t = c.still ? BK_REL + 0.42 : Math.min(c.t % (BK_T + REST), BK_T)
   const px = -14, hx = 20, hy = 25, R = 1.9
   const p = between([[0, BK.hold], [0.3, BK.hold], [0.66, BK.dip], [BK_REL, BK.release], [1.36, BK.follow], [2.1, BK.stand], [3.05, BK.stand], [BK_CATCH, BK.reach], [4.2, BK.hold], [BK_T, BK.hold]], t)
   const g = rig(p, px, 1)
@@ -371,10 +386,13 @@ const KEYS = ['W', 'A', 'S', 'D', 'Q', 'E']
 const KEY_ORDER = [0, 3, 2, 1, 0, 4, 3, 2, 5, 1]
 function esports(c: Ctx) {
   const { ctx } = c
-  const beat = 0.4
+  // eight unhurried presses, then the hands rest for a few seconds
+  const beat = 0.9, PRESSES = 8, cyc = PRESSES * beat + 6
   const t = c.still ? 1.3 : c.t
-  const n = Math.floor(t / beat), k = (t / beat) % 1
-  const tap = c.still ? 0 : Math.sin(Math.min(1, k * 2.2) * Math.PI)
+  const tc = t % cyc, round = Math.floor(t / cyc)
+  const typing = !c.still && tc < PRESSES * beat
+  const n = Math.min(PRESSES - 1, Math.floor(tc / beat)), k = typing ? (tc / beat) % 1 : 1
+  const tap = typing ? Math.sin(Math.min(1, k * 2.2) * Math.PI) : 0
   const left = n % 2 === 0
   const p = { ...ES, lean: ES.lean + (c.still ? 0 : Math.sin(c.now / 1300) * 0.025), le: ES.le - (left ? tap * 0.1 : 0), re: ES.re - (left ? 0 : tap * 0.1) }
   const px = -7, yaw = -0.5
@@ -393,7 +411,7 @@ function esports(c: Ctx) {
   // monitor, turned a little towards us, with the price line running across it
   const mx = 18.5, mz = 5.4, m0 = deskY + 2.6, m1 = deskY + 11.2
   cap(at(mx + 0.4, deskY, 0), at(mx + 0.4, m0, 0), 1)
-  const pulse = c.still ? 0.4 : 1 - k
+  const pulse = c.still ? 0.4 : typing ? 1 - k : 0
   quad([at(mx, m0, -mz), at(mx + 0.9, m1, -mz), at(mx + 0.9, m1, mz), at(mx, m0, mz)], `rgba(2,248,248,${0.05 + pulse * 0.05})`, 'rgba(196,244,241,.8)')
   ctx.beginPath()
   for (let i = 0; i <= 24; i++) {
@@ -409,10 +427,10 @@ function esports(c: Ctx) {
   cap(at(8.2, deskY + 0.7, 0), at(12.6, deskY + 0.7, 0), 0.7)
   // keys lift off the keyboard on each press and drift up
   if (!c.still) {
-    for (let i = 0; i < 4; i++) {
-      const age = (i + k) * beat, life = 1.5
-      if (age > life || n - i < 0) continue
-      const u = age / life, idx = KEY_ORDER[(n - i) % KEY_ORDER.length]
+    for (let i = 0; i < 2; i++) {
+      const j = n - i, age = tc - j * beat, life = 1.5
+      if (j < 0 || age < 0 || age > life) continue
+      const u = age / life, idx = KEY_ORDER[(round * PRESSES + j) % KEY_ORDER.length]
       const kx = 9 + ((idx * 37) % 9) * 0.45 + Math.sin(u * 3 + idx) * 0.8, ky = deskY + 2 + u * 9.5
       const v = c.V(...at(kx, ky, 0))
       const sz = (1.5 + 0.5 * smooth(u * 4)) * v[3], al = (1 - u) * (1 - u)
@@ -422,15 +440,14 @@ function esports(c: Ctx) {
       ctx.fillStyle = '#c4f4f1'; ctx.font = `700 ${Math.round(sz * 1.15)}px 'Red Hat Display Variable', sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
       ctx.fillText(KEYS[idx], 0, sz * 0.06); ctx.restore()
     }
-    const hand = left ? g.lHand : g.rHand
-    ring(c, hand[0], hand[2], 2 + k * 9, 0.4 * (1 - k))
+    if (typing) { const hand = left ? g.lHand : g.rHand; ring(c, hand[0], hand[2], 2 + k * 9, 0.4 * (1 - k)) }
   }
 }
 
 // `tall` is how many units of height the scene needs; `at` is where its origin sits across the band (desktop, phone)
 const SCENES: Record<Sport, { draw: (c: Ctx) => void; label: string; tall: number; at: [number, number] }> = {
   football: { draw: football, label: 'A footballer running in and striking a ball', tall: 27.5, at: [0.7, 0.7] },
-  tennis: { draw: tennis, label: 'A tennis player returning a ball over the net', tall: 30, at: [0.7, 0.7] },
+  tennis: { draw: tennis, label: 'A tennis player returning a ball over the net', tall: 33, at: [0.7, 0.7] },
   basketball: { draw: basketball, label: 'A basketball player making a jump shot', tall: 36.5, at: [0.7, 0.64] },
   esports: { draw: esports, label: 'A player at a desk, keys lifting off as they are pressed', tall: 23.5, at: [0.66, 0.62] },
 }
@@ -446,7 +463,8 @@ export function SportHero({ sport }: { sport: Sport }) {
     const sc = SCENES[sport]
     const fixed = heroT() // ?ht=1.2 holds the scene at one moment, for review screenshots
     const still = fixed == null && (calm || window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-    let w = 0, h = 0, raf = 0, start = performance.now(), seen = true, out = 0
+    const text = cv.closest('.hero')?.querySelector<HTMLElement>('.hero-t') ?? null
+    let w = 0, h = 0, raf = 0, start = performance.now(), seen = true, out = 0, clear = 0
     const frame = (now: number) => {
       const phone = w < 520
       const gy = Math.round(h * 0.82)
@@ -461,7 +479,7 @@ export function SportHero({ sport }: { sport: Sport }) {
         if (!out && t > FOOTBALL_LOOP) out = now
         GA = out ? Math.max(0, 1 - (now - out) / 240) : Math.min(1, t / 0.3)
       } else GA = 1
-      const c: Ctx = { ctx, w, h, now, t, still, V, S, cx, gy, phone }
+      const c: Ctx = { ctx, w, h, now, t, still, V, S, cx, gy, phone, clear }
       ctx.clearRect(0, 0, w, h)
       floor(c)
       sc.draw(c)
@@ -472,12 +490,13 @@ export function SportHero({ sport }: { sport: Sport }) {
       const r = cv.parentElement!.getBoundingClientRect()
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
       w = r.width; h = r.height
+      clear = text ? text.getBoundingClientRect().right - r.left + 24 : 0
       cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       if (still || fixed != null) frame(performance.now())
     }
     const go = () => { if (still) return; cancelAnimationFrame(raf); raf = requestAnimationFrame(frame) }
-    const ro = new ResizeObserver(size); ro.observe(cv.parentElement!)
+    const ro = new ResizeObserver(size); ro.observe(cv.parentElement!); if (text) ro.observe(text)
     const io = new IntersectionObserver(([e]) => { const was = seen; seen = e.isIntersecting; if (seen && !was) go() }); io.observe(cv)
     const vis = () => { if (!document.hidden && seen) go() }
     document.addEventListener('visibilitychange', vis)

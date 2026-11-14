@@ -3,11 +3,14 @@ import { create } from 'zustand'
 import { bookClock, closeMarket, useBook, MatchS, Sel, minuteOf, shorten } from './book'
 import { dayAt, TEAMS } from './data'
 
-export type SlipItem = { selId: string; stake: string; price: number; err?: { text: string; action: 'retry' | 'accept' | 'remove' } }
+export type SlipItem = { selId: string; stake: string; price: number; at?: number /* when it was added, so the slip can bring a new card into view */; err?: { text: string; action: 'retry' | 'accept' | 'remove' } }
 export type Bet = {
   id: string; selId: string; sel: string; market: string; matchId: string; match: string; sport: string
   odds: number; stake: number; placed: string; placedX: number; daysAgo: number
   status: 'open' | 'won' | 'lost' | 'cashed' | 'void'; returns: number; cashedAt?: number; isNew?: number
+  // settled sample bets only: what decided it, in a few characters ("FT 2–1", "67'", "Match abandoned"), so a ticket
+  // can read "Won · FT 2–1". Data only; open and newly placed bets leave it unset.
+  result?: string
 }
 export type Receipt = { id: string; sel: string; market: string; odds: number; stake: number; time: string }
 export type Toast = { id: number; text: string; action?: { label: string; run: () => void } }
@@ -26,24 +29,47 @@ const seedBets: Bet[] = [
   { id: 'HB-9MQ2W', selId: 'bar-sev:tg:o2.5', sel: 'Over 2.5', market: 'Total goals', matchId: 'bar-sev', match: 'Barcelona v Sevilla', sport: 'football', odds: 1.72, stake: 10, placed: 'Today 15:20', placedX: 0, daysAgo: 0, status: 'open', returns: 17.2 },
   ...(
     [
-      ['Real Madrid', 'Match result', 'Real Madrid v Bayern', 'football', 2.1, 20, 'won', 42, '20:04', 1],
-      ['Under 2.5', 'Total goals', 'Juventus v Roma', 'football', 1.8, 15, 'lost', 0, '18:31', 2],
-      ['Dortmund', 'Match result', 'Dortmund v Leipzig', 'football', 2.4, 25, 'cashed', 31.2, '16:10', 3],
-      ['R. Varga', 'Match winner', 'R. Varga v D. Keane', 'tennis', 1.55, 30, 'won', 46.5, '13:42', 5],
-      ['Draw', 'Match result', 'Inter v PSG', 'football', 3.4, 10, 'lost', 0, '21:15', 8],
-      ['Owls', 'Match winner', 'Owls v Foxes', 'basketball', 1.9, 20, 'lost', 0, '19:05', 13],
-      ['Liverpool', 'Match result', 'Liverpool v Chelsea', 'football', 1.75, 20, 'void', 20, '17:30', 21],
+      // pairings and teams chosen so none clashes with the fixture list (no team plays within two days of these)
+      ['PSG', 'Match result', 'PSG v Inter', 'football', 2.1, 20, 'won', 42, '20:04', 1, 'FT 2–1'],
+      ['Under 2.5', 'Total goals', 'Frankfurt v Leverkusen', 'football', 1.8, 15, 'lost', 0, '18:31', 2, 'FT 2–2'],
+      ['Chelsea', 'Match result', 'Chelsea v Man City', 'football', 2.4, 25, 'cashed', 31.2, '16:10', 3, "67'"],
+      ['R. Varga', 'Match winner', 'R. Varga v D. Kearon', 'tennis', 1.55, 30, 'won', 46.5, '13:42', 5, '6–4 7–5'],
+      ['Draw', 'Match result', 'Inter v PSG', 'football', 3.4, 10, 'lost', 0, '21:15', 8, 'FT 0–1'],
+      ['Owls', 'Match winner', 'Owls v Foxes', 'basketball', 1.9, 20, 'lost', 0, '19:05', 13, 'FT 74–81'],
+      ['Liverpool', 'Match result', 'Liverpool v Chelsea', 'football', 1.75, 20, 'void', 20, '17:30', 21, 'Match abandoned'],
     ] as const
-  ).map(([sel, market, match, sport, odds, stake, status, returns, time, daysAgo], i): Bet => ({ id: code(i), selId: '', sel, market, matchId: '', match, sport, odds, stake, placed: `${dateAgo(daysAgo)} ${time}`, placedX: 0, daysAgo, status, returns })),
+  ).map(([sel, market, match, sport, odds, stake, status, returns, time, daysAgo, result], i): Bet => ({ id: code(i), selId: '', sel, market, matchId: '', match, sport, odds, stake, placed: `${dateAgo(daysAgo)} ${time}`, placedX: 0, daysAgo, status, returns, result })),
   ...older(),
 ]
+// What decided a settled sample bet, consistent with its selection and outcome. Every template selection is the home
+// side (or Draw / a total), so a won home pick gets a home-win score, and so on. Picked by index for variety.
+function resultOf(sel: string, market: string, sport: string, status: Bet['status'], i: number): string | undefined {
+  const at = (a: string[]) => a[i % a.length]
+  const won = status === 'won'
+  if (status === 'void') return 'Match abandoned'
+  if (status === 'cashed') return sport === 'football' ? `${55 + ((i * 7) % 30)}'` : sport === 'tennis' ? 'Set 2' : sport === 'basketball' ? 'Q3' : 'Map 2'
+  if (status !== 'won' && status !== 'lost') return undefined
+  if (sport === 'football') {
+    const sc = market === 'Total goals'
+      ? (sel.startsWith('Over') === won ? ['2–1', '3–1', '2–2'] : ['1–0', '1–1', '0–0'])
+      : market === 'Both teams to score'
+        ? (won ? ['1–1', '2–1', '2–2'] : ['2–0', '0–1', '1–0'])
+        : sel === 'Draw'
+          ? (won ? ['1–1', '0–0', '2–2'] : ['2–1', '0–1', '1–2'])
+          : (won ? ['2–0', '2–1', '3–1', '1–0'] : ['1–1', '0–1', '1–2', '0–0'])
+    return `FT ${at(sc)}`
+  }
+  if (sport === 'tennis') return at(won ? ['6–4 6–3', '7–5 6–4', '6–3 3–6 6–2'] : ['4–6 3–6', '6–4 3–6 5–7', '3–6 4–6'])
+  if (sport === 'basketball') return `FT ${at(market === 'Total points' ? (won ? ['88–81', '85–80'] : ['76–71', '79–74']) : won ? ['84–79', '91–86'] : ['77–82', '80–88'])}`
+  return `Maps ${at(won ? ['2–1', '2–0'] : ['1–2', '0–2'])}`
+}
 // a month of sample history, so the profile statistics have something to say
 function older(): Bet[] {
   const T = [
     ['Arsenal', 'Match result', 'Arsenal v Fulham', 'football'], ['Over 2.5', 'Total goals', 'Barcelona v Valencia', 'football'], ['Yes', 'Both teams to score', 'Dortmund v Bayern', 'football'],
     ['K. Sato', 'Match winner', 'K. Sato v T. Holm', 'tennis'], ['Draw', 'Match result', 'Roma v Napoli', 'football'], ['Comets', 'Match winner', 'Comets v Rays', 'basketball'],
     ['Liverpool', 'Match result', 'Liverpool v Everton', 'football'], ['Under 2.5', 'Total goals', 'Juventus v Inter', 'football'], ['Northwind', 'Match winner', 'Northwind v Lumen', 'esports'],
-    ['Real Madrid', 'Match result', 'Real Madrid v Atlético', 'football'], ['L. Duarte', 'Match winner', 'L. Duarte v M. Petrov', 'tennis'], ['Over 160.5', 'Total points', 'Owls v Giants', 'basketball'],
+    ['Real Madrid', 'Match result', 'Real Madrid v Atlético', 'football'], ['L. Duarte', 'Match winner', 'L. Duarte v M. Ostrin', 'tennis'], ['Over 160.5', 'Total points', 'Owls v Giants', 'basketball'],
   ]
   const stakes = [5, 10, 15, 20, 25, 30, 40, 50]
   const out: Bet[] = []
@@ -56,7 +82,7 @@ function older(): Bet[] {
     const returns = status === 'won' ? +(stake * odds).toFixed(2) : status === 'lost' ? 0 : status === 'void' ? stake : +(stake * (0.7 + (i % 5) * 0.15)).toFixed(2)
     const daysAgo = 4 + Math.floor((i * 26) / 22)
     const placed = `${dateAgo(daysAgo)} ${pad(12 + (i % 9))}:${pad((i * 13) % 60)}`
-    out.push({ id: code(40 + i), selId: '', sel, market, matchId: '', match, sport, odds, stake, placed, placedX: 0, daysAgo, status, returns })
+    out.push({ id: code(40 + i), selId: '', sel, market, matchId: '', match, sport, odds, stake, placed, placedX: 0, daysAgo, status, returns, result: resultOf(sel, market, sport, status, i) })
   }
   return out.sort((a, b) => a.daysAgo - b.daysAgo)
 }
@@ -71,10 +97,11 @@ type App = {
   logout: () => void
   sf: Record<string, { tab: string; comp: string }>; matchTab: string | null
   setSF: (sport: string, p: Partial<{ tab: string; comp: string }>) => void
-  login: () => void
+  login: (quiet?: unknown) => void
   set: (p: Partial<App>) => void
   toggle: (selId: string) => void
   remove: (selId: string) => void
+  clearAll: () => void
   setStake: (selId: string, v: string) => void
   accept: (selId?: string) => void
   place: () => void
@@ -87,24 +114,25 @@ type App = {
 }
 let tid = 1
 export const useApp = create<App>((set, get) => ({
-  slip: [], receipts: [], placing: null, pref: 'better', balance: 1000, bets: seedBets, follow: ['c:pl', 't:ars'],
+  slip: [], receipts: [], placing: null, pref: 'ask' /* D9: every changed price is accepted by the player */, balance: 1000, bets: seedBets, follow: ['c:pl', 't:ars'],
   toasts: [], panelTab: 'slip', sheet: null, menu: false, scenes: false, search: false,
   failNext: false, declineCash: false, failIdx: 0,
   user: { alias: 'wave_rider_52' }, profile: false, card: null, wallet: false, stash: null,
   sf: {}, matchTab: null,
   setSF: (sport, p) => set({ sf: { ...get().sf, [sport]: { ...(get().sf[sport] ?? { tab: 'now', comp: 'all' }), ...p } } }),
   // the demo player: no password. Logging out puts the account's bets and balance away; logging in brings them back.
-  login: () => {
+  // `quiet === true` (the slip's own "Log in to place bets" button): no toast, the button and the balance changing say it.
+  login: (quiet) => {
     const st = get()
     if (st.user) return
     set({ user: { alias: 'wave_rider_52' }, bets: st.stash?.bets ?? st.bets, balance: st.stash?.balance ?? st.balance, stash: null, menu: false })
-    get().toast('Signed in as wave_rider_52, the demo player. No password needed in this prototype.')
+    if (quiet !== true) get().toast('Signed in as wave_rider_52, the demo player.')
   },
   logout: () => {
     const st = get()
     if (!st.user) return
     set({ user: null, stash: { bets: st.bets, balance: st.balance }, bets: [], slip: st.slip.map((i) => ({ ...i, err: undefined })), receipts: [], wallet: false, card: null, profile: false, sheet: null, menu: false })
-    get().toast('Logged out. Your demo bets and balance are kept for when you log back in.')
+    get().toast('Logged out. Your demo bets and balance are kept.')
   },
   set: (p) => set(p),
   toast: (text, action) => {
@@ -112,20 +140,26 @@ export const useApp = create<App>((set, get) => ({
     set({ toasts: [...get().toasts.slice(-1), { id, text, action }] })
     setTimeout(() => set({ toasts: get().toasts.filter((t) => t.id !== id) }), 4200)
   },
-  shellToast: () => get().toast('This part of Housebets is outside this prototype. You’re playing with a demo balance.'),
+  shellToast: () => get().toast('That part is outside this prototype.'),
   toggle: (selId) => {
     const { slip } = get()
     const sel = useBook.getState().sels[selId]
     if (slip.some((i) => i.selId === selId)) return get().remove(selId)
     if (!sel || sel.settled) return get().toast('That selection has already been settled.')
     if (useBook.getState().mkts[sel.mk].closed) return get().toast('That market is closed.')
-    set({ slip: [...slip, { selId, stake: '', price: sel.price }], receipts: [], panelTab: 'slip' })
+    set({ slip: [...slip, { selId, stake: '', price: sel.price, at: Date.now() }], receipts: [], panelTab: 'slip' })
   },
   remove: (selId) => {
     const item = get().slip.find((i) => i.selId === selId)
     if (!item) return
     set({ slip: get().slip.filter((i) => i.selId !== selId) })
     get().toast('Removed from your slip', { label: 'Undo', run: () => set({ slip: [...get().slip.filter((i) => i.selId !== selId), item] }) })
+  },
+  clearAll: () => {
+    const was = get().slip
+    if (!was.length) return
+    set({ slip: [] })
+    get().toast('Slip cleared', { label: 'Undo', run: () => set({ slip: [...was, ...get().slip.filter((i) => !was.some((w) => w.selId === i.selId))] }) })
   },
   setStake: (selId, v) => set({ slip: get().slip.map((i) => (i.selId === selId ? { ...i, stake: v, err: undefined } : i)) }),
   clearErr: (selId) => set({ slip: get().slip.map((i) => (i.selId === selId ? { ...i, err: undefined } : i)) }),
@@ -157,20 +191,25 @@ export const useApp = create<App>((set, get) => ({
     setTimeout(() => {
       const s2 = get()
       const b2 = useBook.getState()
+      let failed: SlipItem | undefined
+      let failErr: SlipItem['err']
       if (s2.failNext) {
         const reasons: SlipItem['err'][] = [
-          { text: 'Not placed. The price moved before your bet was accepted.', action: 'accept' },
-          { text: 'Not placed. The connection dropped, and your stake was not taken.', action: 'retry' },
-          { text: 'Not placed. This market closed before your bet was accepted.', action: 'remove' },
+          // order matters: the first failure a reviewer triggers is the plain one, not a look-alike of "odds changed"
+          { text: 'Not placed: the connection dropped. Your stake was not taken.', action: 'retry' },
+          { text: 'Not placed: the price moved before your bet was accepted.', action: 'accept' },
+          { text: 'Not placed: this market closed before your bet was accepted.', action: 'remove' },
         ]
         const err = reasons[s2.failIdx % reasons.length]!
-        if (err.action === 'accept') ready.forEach((i) => shorten(i.selId, 0.04))
+        // singles are separate bets: one fails, the others go through ("2 placed · 1 not placed")
+        failed = ready[0]
+        if (err.action === 'accept') shorten(failed.selId, 0.04)
         // "market closed" is real: the market shuts, takes no stake, and comes back a little later
-        if (err.action === 'remove') ready.forEach((i) => closeMarket(b2.sels[i.selId].mk, 'Closed by the trader', 25000))
-        set({ placing: null, failNext: false, failIdx: s2.failIdx + 1, slip: s2.slip.map((i) => (ready.some((r) => r.selId === i.selId) ? { ...i, err } : i)) })
-        return
+        if (err.action === 'remove') closeMarket(b2.sels[failed.selId].mk, 'Closed by the trader', 25000)
+        failErr = err
+        set({ failNext: false, failIdx: s2.failIdx + 1 })
       }
-      const placedIds = new Set(ready.map((r) => r.selId))
+      const placedIds = new Set(ready.filter((r) => r !== failed).map((r) => r.selId))
       const newBets: Bet[] = []
       const receipts: Receipt[] = []
       let spent = 0
@@ -185,14 +224,16 @@ export const useApp = create<App>((set, get) => ({
         newBets.push({ id, selId: sel.id, sel: sel.name, market: mk.name, matchId: m.id, match: matchName(m), sport: m.fx.sport, odds: taken[i.selId], stake, placed: `Today ${bookClock()}`, placedX: m.x, daysAgo: 0, status: 'open', returns: +(stake * taken[i.selId]).toFixed(2), isNew: Date.now() })
         receipts.push({ id, sel: sel.name, market: `${mk.name} · ${matchName(m)}`, odds: taken[i.selId], stake, time: bookClock(true) })
       }
-      set({ placing: null, slip: s2.slip.filter((i) => !placedIds.has(i.selId)), receipts, bets: [...newBets, ...s2.bets], balance: +(s2.balance - spent).toFixed(2) })
-      // the receipt steps aside by itself; the bet stays in My bets
-      setTimeout(() => { if (get().receipts === receipts) set({ receipts: [] }) }, 10000)
+      // the receipt stays until Done, View in My bets, or the next selection; the bet itself is in My bets
+      set({ placing: null, slip: s2.slip.filter((i) => !placedIds.has(i.selId)).map((i) => (failed && i.selId === failed.selId ? { ...i, err: failErr } : i)), receipts, bets: [...newBets, ...s2.bets], balance: +(s2.balance - spent).toFixed(2) })
     }, ms)
   },
   cashOut: (betId, value) => {
     const st = get()
-    set({ bets: st.bets.map((b) => (b.id === betId ? { ...b, status: 'cashed', returns: value, cashedAt: Date.now() } : b)), balance: +(st.balance + value).toFixed(2) })
+    // when it was cashed out, for the settled line ("Cashed out · 52'"): the minute, or the set / quarter / map
+    const m = useBook.getState().matches[st.bets.find((b) => b.id === betId)?.matchId ?? '']
+    const result = m?.live ? minuteLabel(m).replace(/ \d+:\d+$/, '') : undefined // "Q3 4:12" reads "Q3"
+    set({ bets: st.bets.map((b) => (b.id === betId ? { ...b, status: 'cashed', returns: value, cashedAt: Date.now(), result } : b)), balance: +(st.balance + value).toFixed(2) })
   },
   toggleFollow: (id, name) => {
     const { follow } = get()
@@ -227,12 +268,13 @@ window.addEventListener('hb-settled', (e) => {
   st.toast(notes.length > 1 ? `${notes.length} bets settled · ${credit.toFixed(2)} USDT returned` : notes[0])
 })
 
-export function stakeState(i: SlipItem, balance: number): { ok: boolean; msg?: string; n: number } {
+export function stakeState(i: SlipItem, balance: number): { ok: boolean; msg?: string; n: number; fix?: number } {
   const n = parseFloat(i.stake)
   if (!i.stake || isNaN(n) || n === 0) return { ok: false, n: 0 }
-  if (n < 0.1) return { ok: false, n, msg: 'Minimum stake 0.10 USDT' }
-  if (n > 500) return { ok: false, n, msg: 'Maximum stake is 500 USDT on this market' }
-  if (n > balance) return { ok: false, n, msg: `More than your demo balance (${balance.toFixed(2)} USDT)` }
+  // `fix` is the nearest stake that would be accepted, offered as a one-tap correction beside the message
+  if (n < 0.1) return { ok: false, n, msg: 'Minimum stake is 0.10 USDT', fix: 0.1 }
+  if (n > 500) return { ok: false, n, msg: 'Maximum stake is 500.00 USDT', fix: 500 }
+  if (n > balance) return { ok: false, n, msg: 'More than your balance', fix: balance >= 0.1 ? balance : undefined }
   return { ok: true, n }
 }
 // does this slip item need the player to accept a new price?

@@ -3,7 +3,7 @@ import { ReactNode, useEffect, useId, useLayoutEffect, useRef, useState } from '
 import NumberFlow from '@number-flow/react'
 import { CaretRight, Check, Lock, Star, MagnifyingGlass } from '@phosphor-icons/react'
 import { useLocation } from 'wouter'
-import { useBook, MatchS } from './book'
+import { useBook, MatchS, money } from './book'
 import { useApp, minuteLabel } from './store'
 import { COMPS, TEAMS, TENNIS_PTS } from './data'
 
@@ -67,10 +67,59 @@ export function Flag({ comp }: { comp: string }) {
 export const LiveDot = ({ still }: { still?: boolean }) => <i className={cx('dot', still && 'still')} aria-hidden />
 export const Usdt = () => <i className="tether" aria-hidden>₮</i>
 
+// Prices roll in about 450 ms (the library default is 900): a damped spring that is 95% there at about 190 ms.
+// NumberFlow animates through the Web Animations API, which cannot read CSS variables, so the curve from --ease-spring is repeated here.
+const SPRING = typeof CSS !== 'undefined' && CSS.supports?.('transition-timing-function', 'linear(0, 1)')
+  ? 'linear(0, 0.047, 0.156, 0.292, 0.433, 0.564, 0.678, 0.772, 0.847, 0.904, 0.946, 0.975, 0.994, 1.006, 1.012, 1.015, 1.015, 1.014, 1.012, 1.01, 1.008, 1.006, 1.004, 1.003, 1)'
+  : 'cubic-bezier(.22,1,.36,1)'
+const ROLL = { duration: 450, easing: SPRING }
+const ROLL_FADE = { duration: 150, easing: 'ease-out' }
 export function Price({ value, dir = 0, plain }: { value: number; dir?: number; plain?: boolean }) {
   const calm = useBook((s) => s.calm)
-  if (plain || calm || reduced()) return <>{value.toFixed(2)}</>
-  return <NumberFlow value={value} format={{ minimumFractionDigits: 2, maximumFractionDigits: 2 }} trend={dir >= 0 ? 1 : -1} />
+  if (plain || calm || reduced()) return <>{money(value)}</>
+  return <NumberFlow value={value} format={{ minimumFractionDigits: 2, maximumFractionDigits: 2 }} trend={dir >= 0 ? 1 : -1} transformTiming={ROLL} spinTiming={ROLL} opacityTiming={ROLL_FADE} />
+}
+
+// ---- motion helpers shared by every page ------------------------------------
+// Exit durations in ms, matched by the `.is-closing` rules in styles-account.css (block "A1 foundation: exits").
+export const EXIT = { sheet: 200, dialog: 160, toast: 150, pop: 100 } as const
+// Keeps an overlay mounted for `ms` after `open` turns false, so its exit can play. Usage:
+//   const { mounted, closing } = usePresence(open, EXIT.sheet)
+//   if (!mounted) return null
+//   <div className={cx('sheet', closing && 'is-closing')}>…</div>
+// Run focus return and the Escape listener on `open`, not on `mounted`. Under reduced motion it unmounts at once.
+export function usePresence(open: boolean, ms: number = EXIT.sheet) {
+  const [mounted, setMounted] = useState(open)
+  useEffect(() => {
+    if (open) { setMounted(true); return }
+    const t = setTimeout(() => setMounted(false), reduced() ? 0 : ms)
+    return () => clearTimeout(t)
+  }, [open, ms])
+  return { mounted: open || mounted, closing: mounted && !open }
+}
+// A key that changes only when a count goes UP after mount: never on page load, never on a decrease. Usage:
+//   const k = useCountUp(n);  <b key={k} className={cx('pillc', k > 0 && 'count-in')}>{n}</b>
+export function useCountUp(n: number) {
+  const last = useRef(n)
+  const key = useRef(0)
+  if (n > last.current) key.current += 1
+  last.current = n
+  return key.current
+}
+// A score digit that slides in only when its value changes after mount (a goal, a point), never on page load or when
+// a plate is re-mounted. `v` is the value to watch; children are what to show when that differs (tennis points).
+export function Digit({ v, children }: { v: number | string; children?: ReactNode }) {
+  const first = useRef(v)
+  const moved = useRef(false)
+  if (v !== first.current) moved.current = true
+  return <b key={v} className={moved.current ? 'land' : 'dg'}>{children ?? v}</b>
+}
+// The follow star: it lands only when the player turns follow on. Already-followed stars stay still on page load.
+export function StarIcon({ on, size = 16 }: { on: boolean; size?: number }) {
+  const first = useRef(on)
+  const changed = useRef(false)
+  if (on !== first.current) changed.current = true
+  return <Star key={+on} size={size} weight={on ? 'fill' : 'regular'} className={on && changed.current ? 'starin' : undefined} />
 }
 export function Wake({ dir, at }: { dir: number; at: number }) {
   const age = Date.now() - at
@@ -78,26 +127,29 @@ export function Wake({ dir, at }: { dir: number; at: number }) {
   return <i key={at} className={cx('wk', dir > 0 ? 'u' : 'dn', 'on')} style={{ animationDelay: `-${age}ms` }} aria-label={dir > 0 ? 'price up' : 'price down'} />
 }
 
-export function OddsCell({ id, label, team, variant = 'list' }: { id: string; label?: string; team?: string; variant?: 'list' | 'wide' | 'stack' }) {
+// `market` and `match` only feed the spoken name ("Arsenal, Match result, Arsenal v Brighton, 1.30"). The market is read
+// from the book when it is not given; pass `match` wherever the key sits in a list of several matches.
+export function OddsCell({ id, label, team, variant = 'list', market, match }: { id: string; label?: string; team?: string; variant?: 'list' | 'wide' | 'stack'; market?: string; match?: string }) {
   const sel = useBook((s) => s.sels[id])
   const sus = useBook((s) => !!s.mkts[s.sels[id]?.mk]?.sus)
+  const mkName = useBook((s) => s.mkts[s.sels[id]?.mk]?.name)
   const on = useApp((s) => s.slip.some((i) => i.selId === id))
   const toggle = useApp((s) => s.toggle)
   if (!sel) return <span className="cell none">—</span>
   // decided by the score: no longer on sale anywhere
-  if (sel.settled) return <span className={cx('cell done', variant)}>{label && <span className="l">{label}</span>}<span className="pill">{sel.settled === 'won' ? 'Won' : 'Lost'}</span></span>
+  if (sel.settled) return <span className={cx('cell done', variant, sel.settled)}>{label && <span className="l">{label}</span>}<span className="pill">{sel.settled === 'won' ? <><Check size={12} weight="bold" aria-hidden /> Won</> : 'Lost'}</span></span>
   const age = Date.now() - sel.movedAt
+  const where = [market ?? mkName, match].filter(Boolean).join(', ')
   return (
     <button
       className={cx('cell', variant, on && 'sel', sus && 'dim')}
       aria-pressed={on}
       aria-disabled={sus}
-      aria-label={`${sel.name}, ${sus ? 'suspended' : sel.price.toFixed(2)}${!sus && sel.dir && age < 6000 ? (sel.dir > 0 ? ', price up' : ', price down') : ''}`}
+      aria-label={`${sel.name}, ${where ? where + ', ' : ''}${sus ? 'suspended' : sel.price.toFixed(2)}${!sus && sel.dir && age < 6000 ? (sel.dir > 0 ? ', price up' : ', price down') : ''}`}
       onClick={(e) => { e.stopPropagation(); if (!sus) toggle(id) }}
     >
       {label && <span className="l">{team && <Crest id={team} size={11} />}<span>{label}</span></span>}
       <span className="p"><Price value={sel.price} dir={sel.dir} /></span>
-      {on && <Check className="ok" size={10} weight="bold" aria-hidden />}
       {!sus && <Wake dir={sel.dir} at={sel.movedAt} />}
       {!sus && sel.dir !== 0 && age < 700 && <i key={sel.movedAt} className={cx('tint', sel.dir > 0 ? 'u' : 'dn')} />}
     </button>
@@ -231,9 +283,11 @@ export function Heads({ heads }: { heads: string[] }) {
 export function SusSpan({ reason, until }: { reason: string; until?: number }) {
   const now = useBook((s) => s.now)
   const left = until ? Math.max(0, Math.ceil((until - now) / 1000)) : 0
-  return <div className="cell sus" role="status"><Lock size={14} /> <span>{reason === 'Full time' ? 'Closed · Full time' : `Suspended · ${reason}`}</span>{left > 0 && <span className="d cd">{left}s</span>}</div>
+  return <div className="cell sus"><Lock size={14} aria-hidden /> <span>{reason === 'Full time' ? 'Closed · Full time' : `Suspended · ${reason}`}</span>{left > 0 && <span className="d cd" aria-hidden>{left}s</span>}</div>
 }
-export function Status({ m }: { m: MatchS }) {
+// `row` (every list row): one line, a still red dot and the minute ("HT" at half time). Without it (Popular cards):
+// the minute with the word LIVE.
+export function Status({ m, row }: { m: MatchS; row?: boolean }) {
   const gone = useBook((s) => Math.floor((s.now - s.started) / 60000)) // minutes since the page opened, so kick-offs count down
   const [goal, setGoal] = useState(false)
   const total = m.score[0] + m.score[1]
@@ -245,6 +299,13 @@ export function Status({ m }: { m: MatchS }) {
     const t = setTimeout(() => setGoal(false), 8000)
     return () => clearTimeout(t)
   }, [total])
+  if (m.live && row)
+    return (
+      <div className="st">
+        <LiveDot still /><span className="mt-vh">Live </span>
+        <span className="d min">{goal ? <b className="goal">Goal</b> : minuteLabel(m)}</span>
+      </div>
+    )
   if (m.live)
     return (
       <div className="st lv">
@@ -266,7 +327,7 @@ export function TennisPlate({ m, full }: { m: MatchS; full?: boolean }) {
     <>
       <span className={cx('s', k === 1 && 'r2', m.score[k] > m.score[1 - k] && 'hi')}>{m.score[k]}</span>
       {shown.map((i) => <span key={i} className={cx('g', k === 1 && 'r2', i === cur && 'cur', i !== cur && sets[i][k] < sets[i][1 - k] && 'lo')}>{sets[i][k]}</span>)}
-      <span className={cx('p', k === 1 && 'r2')}><b key={pts[k]} className="land">{TENNIS_PTS[pts[k]]}</b></span>
+      <span className={cx('p', k === 1 && 'r2')}><Digit v={pts[k]}>{TENNIS_PTS[pts[k]]}</Digit></span>
     </>
   )
   return (
@@ -284,8 +345,8 @@ export function Plate({ m }: { m: MatchS }) {
   const [a, b] = m.score
   return (
     <span className="plate d" role="img" aria-label={`Score ${a} to ${b}`}>
-      <span className={cx(a < b && 'lo', a > b && 'hi')}><b key={a} className="land">{a}</b></span>
-      <span className={cx(b < a && 'lo', b > a && 'hi')}><b key={b} className="land">{b}</b></span>
+      <span className={cx(a < b && 'lo', a > b && 'hi')}><Digit v={a} /></span>
+      <span className={cx(b < a && 'lo', b > a && 'hi')}><Digit v={b} /></span>
     </span>
   )
 }
@@ -298,23 +359,24 @@ export function EventRow({ id, market = 'main', showComp }: { id: string; market
   const toggleFollow = useApp((s) => s.toggleFollow)
   const { ids, heads } = rowSels(m, market)
   const fid = `m:${id}`
+  const vs = `${TEAMS[m.fx.home].name} v ${TEAMS[m.fx.away].name}`
   return (
     <div className={cx('row', ids.length === 2 && 'two')} role="link" tabIndex={0} onClick={() => nav(`/match/${id}`)} onKeyDown={(e) => e.key === 'Enter' && nav(`/match/${id}`)}>
-      <Status m={m} />
+      <Status m={m} row />
       <div className="tms">
         {showComp && <div className="meta cmp">{COMPS[m.fx.comp].name}</div>}
         {[m.fx.home, m.fx.away].map((t, ti) => { const on = follow.includes(`t:${t}`); return (
           <div className="tm" key={t}><Crest id={t} /><span>{TEAMS[t].name}</span><Serve m={m} side={ti as 0 | 1} />
-            <button className={cx('tstar', on && 'on')} aria-pressed={on} aria-label={`${on ? 'Unfollow' : 'Follow'} ${TEAMS[t].name}`} onClick={(e) => { e.stopPropagation(); toggleFollow(`t:${t}`, TEAMS[t].name) }}><Star key={+on} size={13} weight={on ? 'fill' : 'regular'} /></button>
+            <button className={cx('tstar', on && 'on')} aria-pressed={on} aria-label={`${on ? 'Unfollow' : 'Follow'} ${TEAMS[t].name}`} onClick={(e) => { e.stopPropagation(); toggleFollow(`t:${t}`, TEAMS[t].name) }}><StarIcon on={on} size={13} /></button>
           </div>) })}
       </div>
       <div className="scs">{m.live && <Plate m={m} />}</div>
       <div className="px">
-        {sus ? <SusSpan reason={sus} until={susS?.until} /> : ids.map((sid, i) => <OddsCell key={sid} id={sid} label={heads[i]} />)}
+        {sus ? <SusSpan reason={sus} until={susS?.until} /> : ids.map((sid, i) => <OddsCell key={sid} id={sid} label={heads[i]} match={vs} />)}
       </div>
       <div className="more">
         <button className="star" aria-label="Follow match" aria-pressed={follow.includes(fid)} onClick={(e) => { e.stopPropagation(); toggleFollow(fid, `${TEAMS[m.fx.home].short} v ${TEAMS[m.fx.away].short}`) }}>
-          <Star size={16} weight={follow.includes(fid) ? 'fill' : 'regular'} />
+          <StarIcon on={follow.includes(fid)} size={16} />
         </button>
         <span className="d" aria-label={`${m.fx.n} more markets`}>+{m.fx.n}</span><CaretRight size={12} />
       </div>
@@ -355,12 +417,22 @@ export function useTabBar(memo?: string) {
   const node = bar && <i className="tabbar" style={{ width: bar.w, transform: `translateX(${bar.x}px)` }} aria-hidden />
   return [ref, node] as const
 }
-export function Tabs<T extends string>({ items, value, onChange, className, memo }: { items: { id: T; label: ReactNode; n?: ReactNode }[]; value: T; onChange: (v: T) => void; className?: string; memo?: string }) {
+// A tab list: one tab stop (the selected tab, or the first when none is), Left / Right / Home / End move and select.
+export function Tabs<T extends string>({ items, value, onChange, className, memo, label }: { items: { id: T; label: ReactNode; n?: ReactNode }[]; value: T; onChange: (v: T) => void; className?: string; memo?: string; label?: string }) {
   const [ref, bar] = useTabBar(memo)
+  const at = items.findIndex((t) => t.id === value)
+  const onKey = (e: React.KeyboardEvent) => {
+    const n = items.length
+    const to = e.key === 'ArrowRight' ? (at + 1) % n : e.key === 'ArrowLeft' ? (at < 0 ? n - 1 : (at - 1 + n) % n) : e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : -1
+    if (to < 0 || !n) return
+    e.preventDefault()
+    if (to !== at) onChange(items[to].id)
+    ref.current?.querySelectorAll<HTMLElement>('[role="tab"]')[to]?.focus()
+  }
   return (
-    <div ref={ref} className={cx('tabs', className)} role="tablist">
-      {items.map((t) => (
-        <button key={t.id} role="tab" aria-selected={t.id === value} className={cx(t.id === value && 'on')} onClick={() => onChange(t.id)}>
+    <div ref={ref} className={cx('tabs', className)} role="tablist" aria-label={label} onKeyDown={onKey}>
+      {items.map((t, i) => (
+        <button key={t.id} role="tab" aria-selected={t.id === value} tabIndex={i === Math.max(0, at) ? 0 : -1} className={cx(t.id === value && 'on')} onClick={() => onChange(t.id)}>
           <span className="tl">{t.label}</span>{t.n != null && <small>{t.n}</small>}
         </button>
       ))}
@@ -378,10 +450,13 @@ export const WaveMark = () => (
 export function Empty({ title, children }: { title: string; children?: ReactNode }) {
   return <div className="empty"><WaveMark /><h4>{title}</h4>{children && <div className="meta">{children}</div>}</div>
 }
-export function Elapsed({ since }: { since: number }) {
+// How long a suspension still has to run, as the lists show it ("22s"). Nothing when the end is not known or has
+// passed. `sep` puts the " · " in front, so a line with no timer is not left with a dangling dot.
+export function Elapsed({ until, sep }: { until?: number; sep?: boolean }) {
   const now = useBook((s) => s.now)
-  const s = Math.max(0, Math.floor((now - since) / 1000))
-  return <span className="d">{Math.floor(s / 60)}:{String(s % 60).padStart(2, '0')}</span>
+  const left = until ? Math.max(0, Math.ceil((until - now) / 1000)) : 0
+  if (left <= 0) return null
+  return <>{sep && ' · '}<span className="d cd" aria-hidden>{left}s</span></>
 }
 
 // Search key: one icon button that opens search, placed in each page's own row of controls.

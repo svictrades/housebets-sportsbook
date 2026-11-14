@@ -1,0 +1,59 @@
+/* Polish round: betcard owner. Loaded after styles-account.css, so rules here win. */
+
+/* ---- "Your bets live" strip ------------------------------------------------------------------------------------- */
+/* its content shares the page column's left edge at every width (the page is 1100px, centred, 32px inset) */
+@media (min-width:1280px){.strip{padding-left:max(32px,calc(50% - 518px));padding-right:max(20px,calc(50% - 530px))}}
+@media (max-width:1279px) and (min-width:1024px){.strip{padding-left:max(20px,calc(50% - 530px));padding-right:max(12px,calc(50% - 538px))}}
+@media (min-width:1024px){
+  /* every cell has the same two rows, so the small labels share one line */
+  .sp-c>b,.sp-c .st-t{height:22px}
+  .sp-spark{height:22px;padding-top:1px}
+  /* when the row is full, the small chart gives way first, so the cash-out value is never cut */
+  .sp-c.c-trend{min-width:142px;grid-template-columns:minmax(0,1fr)}
+  .sp-c.c-trend .sp-spark{width:auto;max-width:150px}
+  /* pager: the bars look as before (20px wide, 4px apart), each inside a 24px button */
+  .sp-lab .strip-n{gap:0;margin:-8px -2px -8px -2px}
+  .sp-lab .strip-n button{width:24px;height:24px}
+  .sp-lab .strip-n i{width:20px}
+}
+.sp-short{display:none}
+/* the two-line tennis plate is drawn small here, so it sits in the strip's one row without touching the label above */
+.strip .plate.tn>span{height:14px!important;font-size:12px!important}
+/* the strip already shows this match and its score, so the match page's small sticky score would say it twice */
+.maincol:has(.strip[data-here]:not(.off)) .mini-score,.phone:has(.strip[data-here]:not(.off)) .mini-score{display:none}
+@media (max-width:1023px){
+  /* opaque: nothing scrolling under the strip shows through it */
+  .strip{background:linear-gradient(90deg,rgba(2,248,248,.07),transparent 60%),var(--bg)}
+  /* pager: one button for the whole column of marks, with a 44px place to tap */
+  .strip-nx{position:relative;display:flex;flex-direction:column;justify-content:center;gap:3px;width:4px;height:38px;z-index:1}
+  .strip-nx:before{content:"";position:absolute;top:-4px;bottom:-4px;left:-16px;width:44px}
+  .strip-nx i{display:block;flex:0 1 10px;min-height:2px;width:3px;border-radius:2px;background:var(--line2)}
+  .strip-nx i.on{background:var(--cyan)}
+  .strip-nx:focus-visible{outline-offset:4px}
+  /* team names are never cut: a paused bet says one word, and tennis shows sets and games in a plate that fits */
+  .strip .st-t b{overflow:visible;text-overflow:clip;min-width:auto}
+  .sp-c.c-cash.sus .sp-why{display:none}.sp-c.c-cash.sus .sp-short{display:inline}
+  .strip .plate.tn{grid-template-columns:repeat(2,auto)!important}
+  .strip .plate.tn>span{min-width:20px}
+  .strip .plate.tn>span.p{display:none}
+  /* the sports bar joins the strip (or the header) above it: one hairline between them, not three */
+  .page>.snav:first-child{margin-top:-14px;box-shadow:inset 0 -1px 0 var(--line)}
+}
+
+/* ---- bet card --------------------------------------------------------------------------------------------------- */
+.card-ov .scrim{background:rgba(1,7,10,.94)}
+.card-ov.is-closing{pointer-events:none}
+/* on a short screen the card starts at the top and scrolls, instead of losing its top edge */
+.card-ov{align-items:safe center}
+.card-w:focus{outline:0}
+.card-top{display:flex;justify-content:flex-end;margin-bottom:8px}
+.card-x{width:40px;height:40px;display:grid;place-items:center;border-radius:8px;color:var(--t2);background:var(--raise);box-shadow:inset 0 0 0 1px var(--line2);transition:color var(--d-quick) var(--ease),transform var(--d-quick) var(--ease)}
+@media (hover:hover){.card-x:hover{color:var(--t1);box-shadow:inset 0 0 0 1px var(--line3)}}
+/* the ticket is positioned and casts a long shadow: the buttons under it sit above that shadow */
+.card-acts{position:relative;z-index:1}
+/* a bet in play is stamped in the live red, like every other live tag */
+.stamp.live{--tk:var(--live)}
+/* says what the dashed line in the chart is */
+.tk-key{display:flex;align-items:center;gap:8px;margin-top:6px;font:500 11px/14px var(--body);color:var(--t2)}
+.tk-key i{width:18px;height:1.2px;background:repeating-linear-gradient(90deg,var(--mint) 0 4px,transparent 4px 7px)}
+@media (max-width:1023px){.card-x{width:44px;height:44px}}

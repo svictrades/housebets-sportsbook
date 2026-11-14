@@ -2,12 +2,11 @@
 // Chart colours were checked with the palette validator against the #041015 surface (up #18a886, down #e0603f);
 // direction is also carried by position above or below the baseline, and every value is printed or in the readout.
 import { useMemo, useState } from 'react'
-import { CaretDown, CaretRight, Receipt, SignOut } from '@phosphor-icons/react'
-import { useLocation } from 'wouter'
+import { CaretDown, CaretRight } from '@phosphor-icons/react'
 import { money } from './book'
 import { Bet, useApp } from './store'
 import { dayAt } from './data'
-import { cx, Empty, SearchKey, useIsPhone, useWidth, Usdt } from './ui'
+import { cx, Empty, SearchKey, useWidth, Usdt } from './ui'
 
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1)
 const sign = (n: number) => `${n > 0.004 ? '+' : n < -0.004 ? '−' : ''}${money(Math.abs(n))}`
@@ -64,8 +63,8 @@ function ResultChart({ days }: { days: Day[] }) {
   const last = days[n - 1]
   const tipLeft = cur ? Math.max(4, Math.min(w - 196, x(at!) + (x(at!) > w * 0.62 ? -200 : 14))) : 0
   return (
-    <div ref={ref} className="sx-chart" tabIndex={0} role="img" aria-label={`Running result over ${n - 1} days, ending at ${sign(last.cum)} USDT. Use the arrow keys to read each day.`}
-      onPointerMove={move} onPointerLeave={() => setAt(null)} onKeyDown={key} onBlur={() => setAt(null)}>
+    <div ref={ref} className="sx-chart" tabIndex={0} role="img" aria-label={`Running result over ${n} days, ending at ${sign(last.cum)} USDT. Use the arrow keys to read each day.`}
+      onPointerDown={move} onPointerMove={move} onPointerLeave={(e) => { if (e.pointerType === 'mouse') setAt(null) }} onKeyDown={key} onBlur={() => setAt(null)}>
       {w > 0 && (
         <>
           <svg width={w} height={H1} className="sx-line">
@@ -114,21 +113,19 @@ function BarRow({ name, share, a, b, title }: { name: string; share: number; a: 
 }
 
 export function Stats() {
-  const { user, bets, balance, login, logout, set } = useApp()
-  const [, nav] = useLocation()
-  const phone = useIsPhone()
+  const { user, bets, login, set } = useApp()
   const [range, setRange] = useState<string>('30')
   const [sport, setSport] = useState('all')
   const span = RANGES.find((r) => r[0] === range)![2]
   const st = useMemo(() => {
-    const done = bets.filter((b) => b.status !== 'open' && b.daysAgo <= span && (sport === 'all' || b.sport === sport)).sort((a, b) => b.daysAgo - a.daysAgo) // oldest first
+    const done = bets.filter((b) => b.status !== 'open' && b.daysAgo < span && (sport === 'all' || b.sport === sport)).sort((a, b) => b.daysAgo - a.daysAgo) // oldest first
     const staked = done.reduce((a, b) => a + b.stake, 0)
     const returned = done.reduce((a, b) => a + b.returns, 0)
     const decided = done.filter((b) => b.status === 'won' || b.status === 'lost')
     const won = decided.filter((b) => b.status === 'won')
     let run = 0
     const days: Day[] = []
-    for (let ago = span; ago >= 0; ago--) {
+    for (let ago = span - 1; ago >= 0; ago--) {
       const list = done.filter((b) => b.daysAgo === ago)
       const net = list.reduce((a, b) => a + b.returns - b.stake, 0)
       run += net
@@ -147,7 +144,7 @@ export function Stats() {
     return {
       n: done.length, staked, returned, net: returned - staked, rate: decided.length ? won.length / decided.length : 0, wonN: won.length, decidedN: decided.length,
       avgStake: done.length ? staked / done.length : 0, avgOdds: done.length ? done.reduce((a, b) => a + b.odds, 0) / done.length : 0,
-      days, sports: group((b) => b.sport), markets: group((b) => b.market).slice(0, 5), bands, form: done.slice(-14),
+      days, sports: group((b) => b.sport), markets: group((b) => b.market).slice(0, 5), bands: bands.filter((b) => b.n), form: done.slice(-10),
       wins: byNet.filter((b) => b.returns > b.stake).slice(0, 3), losses: byNet.filter((b) => b.returns < b.stake).slice(-3).reverse(),
       streak, streakKind: decided.length ? decided[decided.length - 1].status : null, bestRun: best,
       activeDays: days.filter((d) => d.bets.length).length,
@@ -156,12 +153,10 @@ export function Stats() {
   if (!user)
     return (
       <div className="page stats">
-        <h1 className="title">Statistics</h1>
-        <Empty title="Log in to see your statistics">Your results, your sports and your best bets, all in one place.<br /><button className="btn pri sx-login" onClick={login}>Log in as the demo player</button></Empty>
+        <h1 className="title">Your betting record</h1>
+        <Empty title="Log in to see your betting record">Your results, your sports and your best bets, all in one place.<br /><button className="btn pri sx-login" onClick={login}>Log in as the demo player</button></Empty>
       </div>
     )
-  const open = bets.filter((b) => b.status === 'open')
-  const atRisk = open.reduce((a, b) => a + b.stake, 0)
   const roi = st.staked ? (st.net / st.staked) * 100 : 0
   const initials = user.alias.split(/[^a-zA-Z]+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('') || 'DP'
   const openCard = (id: string) => set({ card: id })
@@ -176,11 +171,7 @@ export function Stats() {
     <div className="page stats">
       <header className="sx-head">
         <i className="sx-av" aria-hidden>{initials}</i>
-        <div className="sx-who"><h1 className="title">Statistics</h1><span className="meta">{user.alias} · demo player · sample data, no real money</span></div>
-        <div className="sx-acts">
-          <button className="btn" onClick={() => { if (phone) set({ sheet: 'bets' }); else nav('/bets') }}><Receipt size={16} /> My bets · {open.length} open</button>
-          <button className="btn" onClick={() => { logout(); nav('/') }}><SignOut size={16} /> Log out</button>
-        </div>
+        <div className="sx-who"><h1 className="title">Your betting record</h1><span className="meta">{st.n ? `From your ${st.n} settled bet${st.n === 1 ? '' : 's'} · ` : 'No settled bets · '}{dm(dayAt(1 - span))} – {dm(dayAt(0))}</span></div>
       </header>
       <div className="filters sx-filters">
         {RANGES.map(([id, label]) => <button key={id} className={cx('chip', range === id && 'on')} aria-pressed={range === id} onClick={() => setRange(id)}>{label}</button>)}
@@ -196,60 +187,60 @@ export function Stats() {
             <div className="sx-hero">
               <span className="meta">Net result · last {span} days</span>
               <b className="d">{sign(st.net)}<small>USDT</small></b>
-              <span className="sx-delta"><em className={cx('pc', roi >= 0 ? 'u' : 'dn')}>{roi >= 0 ? '+' : '−'}{Math.abs(roi).toFixed(1)}%</em><span className="meta">return on {money(st.staked)} staked</span></span>
+              <span className="sx-delta"><em className={cx('pc', roi >= 0 ? 'u' : 'dn')}>{roi >= 0 ? '+' : '−'}{Math.abs(roi).toFixed(1)}%</em><span className="meta">return on stake</span></span>
             </div>
             <div className="sx-tiles">
-              <Tile label="Settled bets" value={st.n} sub={`on ${st.activeDays} of ${span + 1} days`} />
-              <Tile label="Win rate" value={`${Math.round(st.rate * 100)}%`} sub={`${st.wonN} of ${st.decidedN} decided`} />
-              <Tile label="Average stake" value={<><Usdt />{money(st.avgStake)}</>} />
+              <Tile label="Settled bets" value={st.n} sub={`on ${st.activeDays} of ${span} days`} />
+              <Tile label="Win rate" value={st.decidedN ? `${Math.round(st.rate * 100)}%` : '—'} sub={st.decidedN ? `${st.wonN} of ${st.decidedN} decided` : 'no won or lost bets'} />
               <Tile label="Average odds" value={st.avgOdds.toFixed(2)} />
+              <Tile label="Staked" value={<><Usdt />{money(st.staked)}</>} />
               <Tile label="Returned" value={<><Usdt />{money(st.returned)}</>} />
-              <Tile label="Balance" value={<><Usdt />{money(balance)}</>} sub={open.length ? `${money(atRisk)} in ${open.length} open bet${open.length > 1 ? 's' : ''}` : 'no open bets'} />
+              <Tile label="Average stake" value={<><Usdt />{money(st.avgStake)}</>} />
             </div>
           </section>
 
           <section className="sx-sec">
-            <div className="sx-h"><h2 className="h">Running result</h2><span className="meta">Profit or loss added up bet by bet, in USDT. Hover or use the arrow keys to read a day.</span></div>
+            <div className="sx-h"><h2 className="h">Running result</h2><span className="meta">USDT, day by day</span></div>
             <ResultChart days={st.days} />
           </section>
 
           <div className="sx-grid2">
             <section className="sx-sec">
-              <div className="sx-h"><h2 className="h">Most-bet sports</h2><span className="meta cols"><span>Bets</span><span>Result</span></span></div>
+              <div className="sx-h"><h2 className="h">Sports you bet on most</h2><span className="meta cols"><span>Bets</span><span>Result</span></span></div>
               {st.sports.map(([k, v]) => <BarRow key={k} name={cap(k)} share={v.n / st.sports[0][1].n} a={v.n} b={sign(v.net)} title={`${cap(k)}: ${v.n} bets, ${money(v.staked)} staked, result ${sign(v.net)}`} />)}
             </section>
             <section className="sx-sec">
-              <div className="sx-h"><h2 className="h">Most-bet markets</h2><span className="meta cols"><span>Bets</span><span>Result</span></span></div>
+              <div className="sx-h"><h2 className="h">Markets you bet on most</h2><span className="meta cols"><span>Bets</span><span>Result</span></span></div>
               {st.markets.map(([k, v]) => <BarRow key={k} name={k} share={v.n / st.markets[0][1].n} a={v.n} b={sign(v.net)} title={`${k}: ${v.n} bets, ${money(v.staked)} staked, result ${sign(v.net)}`} />)}
             </section>
             <section className="sx-sec">
-              <div className="sx-h"><h2 className="h">Win rate by odds</h2><span className="meta cols"><span>Won</span><span>Rate</span></span></div>
-              {st.bands.map((b) => (
-                <div className={cx('sx-row meter', !b.n && 'none')} key={b.label} title={`${b.label}: won ${b.won} of ${b.n}`}>
+              <div className="sx-h"><h2 className="h">Your win rate by odds</h2><span className="meta cols"><span>Rate</span><span>Bets</span></span></div>
+              {st.bands.length ? st.bands.map((b) => (
+                <div className="sx-row meter" key={b.label} title={`${b.label}: won ${b.won} of ${b.n}`}>
                   <span className="nm">{b.label}</span>
-                  <i className="trk"><u style={{ width: `${b.n ? Math.max(2, (b.won / b.n) * 100) : 0}%` }} /></i>
-                  <b className="d">{b.n ? `${b.won}/${b.n}` : '—'}</b>
-                  <span className="meta d">{b.n ? `${Math.round((b.won / b.n) * 100)}%` : ''}</span>
+                  <i className="trk"><u style={{ width: `${Math.max(2, (b.won / b.n) * 100)}%` }} /></i>
+                  <b className="d">{Math.round((b.won / b.n) * 100)}%</b>
+                  <span className="meta d">{b.won} of {b.n} won</span>
                 </div>
-              ))}
+              )) : <div className="hint meta">No won or lost bets in this range.</div>}
             </section>
             <section className="sx-sec">
-              <div className="sx-h"><h2 className="h">Recent form</h2><span className="meta">oldest to newest</span></div>
+              <div className="sx-h"><h2 className="h">Your last {st.form.length === 1 ? 'bet' : `${st.form.length} bets`}</h2><span className="meta">Newest on the right</span></div>
               <div className="sx-form">
                 {st.form.map((b) => <button key={b.id} className={b.status} onClick={() => openCard(b.id)} aria-label={`${b.sel}, ${b.match}, ${b.status}. Open bet card`} title={`${b.sel} · ${b.match}`}>{b.status === 'won' ? 'W' : b.status === 'lost' ? 'L' : b.status === 'cashed' ? 'C' : 'V'}</button>)}
               </div>
               <div className="meta sx-key">W won · L lost · C cashed out · V void</div>
               <div className="sx-mini">
-                <div><span className="meta">Current run</span><b className="d">{st.streak} {st.streakKind === 'won' ? (st.streak === 1 ? 'win' : 'wins') : st.streak === 1 ? 'loss' : 'losses'}</b></div>
-                <div><span className="meta">Longest winning run</span><b className="d">{st.bestRun}</b></div>
+                <div><span className="meta">Current run</span><b className="d">{st.streakKind === null ? '—' : `${st.streak} ${st.streakKind === 'won' ? (st.streak === 1 ? 'win' : 'wins') : st.streak === 1 ? 'loss' : 'losses'}`}</b></div>
+                <div><span className="meta">Longest winning run</span><b className="d">{st.bestRun || '—'}</b></div>
               </div>
             </section>
             <section className="sx-sec">
-              <div className="sx-h"><h2 className="h">Best results</h2></div>
+              <div className="sx-h"><h2 className="h">Biggest wins</h2></div>
               {st.wins.length ? st.wins.map(betRow) : <div className="hint meta">No winning bets in this range.</div>}
             </section>
             <section className="sx-sec">
-              <div className="sx-h"><h2 className="h">Toughest results</h2></div>
+              <div className="sx-h"><h2 className="h">Biggest losses</h2></div>
               {st.losses.length ? st.losses.map(betRow) : <div className="hint meta">No losing bets in this range.</div>}
             </section>
           </div>

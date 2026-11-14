@@ -4,6 +4,12 @@ import '@fontsource-variable/red-hat-display'
 import './styles.css'
 import './styles-match.css'
 import './styles-account.css'
+import './styles-p-match.css'
+import './styles-p-slip.css'
+import './styles-p-betcard.css'
+import './styles-p-lists.css'
+import './styles-p-shell.css'
+import './styles-p-stats.css'
 import { App } from './App'
 
 createRoot(document.getElementById('root')!).render(<App />)

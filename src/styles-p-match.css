@@ -1,0 +1,103 @@
+/* Polish round: match owner. Loaded after styles-account.css, so rules here win. */
+
+/* ---------- small shared pieces ---------- */
+.mt-vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.mt-h{font:inherit}
+.match .crumbs{gap:12px}
+.match .banner{margin-bottom:16px}
+
+/* ---------- board status: a pause or a goal is said in the row the board already has, so the page never grows ---------- */
+/* the wider wording must not widen the middle column (that would push the team names sideways) */
+.match .sb-live{margin:0 -96px}
+.sb-live.mt-sus{background:none;box-shadow:none;outline:1px dashed var(--line3);outline-offset:-1px}
+.sb-live.mt-sus svg,.sb-live.mt-sus .d{color:var(--t2)}
+.sb-live.mt-sus .d{font:600 13px var(--disp);font-variant-numeric:tabular-nums}
+.sb-live.mt-goal{background:var(--cyan08);box-shadow:inset 0 0 0 1px rgba(2,248,248,.5)}
+
+/* ---------- sticky row: one height, whatever it holds ---------- */
+/* phone, and matches with no tab row: the small score opens with the market collapse and overlaps the list
+   (negative margin of its own height), so the list below does not move against the scroll */
+.match .mini-score{animation:none}
+.mt-mini{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--d-base) var(--ease-move)}
+.mt-mini>div{overflow:hidden;min-height:0}
+.stick.on .mt-mini{grid-template-rows:1fr}
+.match .stick{transition:margin-bottom var(--d-base) var(--ease-move)}
+.match .stick.on{margin-bottom:-44px}
+/* the strip owner hides the small score while the live strip already shows this match: then there is nothing to make room for */
+.maincol:has(.strip[data-here]:not(.off)) .match .stick.on,.phone:has(.strip[data-here]:not(.off)) .match .stick.on{margin-bottom:0}
+.mt-fill{flex:1}
+
+/* ---------- markets ---------- */
+.match .mk .lines{gap:8px;margin-bottom:12px}
+.match .mk.open .mb>div{padding-bottom:15px}
+.mh:focus-visible{outline-offset:-2px}
+@media (hover:hover){.mh:hover .chev{color:var(--t1)}}
+.mh .meta.susr>span{white-space:nowrap}
+/* a closed market that holds a slip selection says so */
+.mt-inslip{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:4px;box-shadow:inset 0 0 0 1px rgba(2,248,248,.4);color:var(--cyan);font:600 12px var(--body);white-space:nowrap}
+.mt-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);flex:none}
+/* goalscorers: one group per team */
+.plist.mt-teams{align-items:start}
+.mt-th{display:flex;align-items:center;gap:8px;height:36px;border-bottom:1px solid var(--line)}
+.mt-th .crest{flex:none}
+/* market search */
+.search .mt-count{flex:none;font-style:normal}
+.match .search.field{margin-bottom:8px}
+.match .search.field button{width:40px;height:40px;margin-right:-12px;border-radius:8px;flex:none}
+
+/* ---------- price history ---------- */
+.mt-line{position:relative;min-width:0}
+/* the minute the player placed their bet: a short mint notch on the baseline of that outcome's line */
+.mt-entry{position:absolute;bottom:0;width:2px;height:9px;margin-left:-1px;border-radius:1px;background:var(--mint);pointer-events:none}
+
+/* ---------- your bets on this match: same collapse as a market ---------- */
+.mt-ybw{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--d-base) var(--ease-move)}
+.yours.open .mt-ybw{grid-template-rows:1fr}
+.match .yb{overflow:hidden;min-height:0;animation:none}
+
+@media (min-width:1024px){
+  .mt-nm{display:contents}
+  /* kick-off time on the same centre line as the names, and one board height before and during a match */
+  .sb-ko{line-height:84px}
+  /* tab row: tabs, then market search, then the small score once the board has scrolled away */
+  .match .stick:not(.bare),.maincol:has(.strip[data-here]:not(.off)) .match .stick.on:not(.bare){display:flex;align-items:center;border-bottom:1px solid var(--line);margin-bottom:0;transition:none}
+  .mt-find{margin-left:16px}
+  .match .stick:not(.bare) .tabs{flex:1;min-width:0;border-bottom:0}
+  .match .stick:not(.bare) .search.field{flex:1;height:40px;margin:3px 0}
+  .match .stick:not(.bare) .mt-mini{display:none}
+  .match .stick.on:not(.bare) .mt-mini{display:block;animation:fade var(--d-quick) var(--ease)}
+  .match .stick:not(.bare) .mini-score{width:auto;height:46px;padding-left:16px;border:0;gap:16px;white-space:nowrap}
+  /* grid keys: name over price, left-aligned, the same key the lists and the phone use */
+  .match .grid .cell.wide{flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;height:56px;padding:0 14px}
+  .match .grid .cell.done.wide{gap:4px}
+}
+
+@media (max-width:1023px){
+  /* 44px targets in the top row; the competition is plain text that opens its league */
+  .match .crumbs .ib,.match .fm{width:44px;height:44px}
+  .mt-comp{height:44px;padding:0 4px;font:600 13px var(--body);color:var(--t2);white-space:nowrap}
+  .match .search.field button{width:44px;height:44px;margin-right:-14px}
+  /* team name centred under its crest: the follow star and the serving dot hang outside the name */
+  .mt-nm{position:relative;display:block;max-width:100%}
+  .mt-nm .n{display:block}
+  .match .sb-star{position:absolute;left:100%;top:50%;margin:-13px 0 0 -2px}
+  .match .sb-n .srv{position:absolute;right:100%;top:50%;margin:-4px 6px 0 0}
+  /* three-way keys: the outcome name wraps and is never cut; every key in the group is one height (the grid
+     stretches them), the name sits right above its price and the prices share one line */
+  .match .grid.three .cell.wide{height:auto;min-height:56px;padding:6px 12px;justify-content:flex-end}
+  .match .grid.three .cell.wide .l{display:block;overflow:visible;-webkit-line-clamp:unset;white-space:normal;line-height:14px;text-align:left}
+  .match .grid.three .cell.wide .l>span{white-space:normal;overflow:visible;text-overflow:clip}
+  /* price history: a taller line, and the whole 44px band reads a past minute */
+  .wl-p .tide.scrub{box-sizing:content-box;padding:8px 0}
+  .wl-p .mt-entry{bottom:8px}
+  .match .mr.hist{margin-top:0}
+  .match .hintline{margin-top:0}
+  .mt-team+.mt-team{margin-top:8px}
+}
+
+/* ---------- fix round ---------- */
+/* your bets bar while cash out is paused: a lock and the words in the place of the value, same 48px bar */
+.yr .mt-yrp{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+/* a suspension counts down in the same figures as the list rows ("22s") */
+.sb-live.mt-sus .cd,.mh .susr .cd{font-weight:600;color:var(--t1)}
+.sb-live.mt-sus .cd{min-width:22px;text-align:right}

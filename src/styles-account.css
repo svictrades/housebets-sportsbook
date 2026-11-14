@@ -19,9 +19,9 @@
 .acctw{position:relative}
 .avb{display:flex;align-items:center;gap:6px;height:40px;padding:0 8px 0 5px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line2);color:var(--t2);transition:box-shadow .16s}
 .avb:hover{box-shadow:inset 0 0 0 1px var(--line3)}.avb.on{box-shadow:inset 0 0 0 1.5px var(--cyan)}
-.acct-m{position:absolute;right:0;top:48px;z-index:48;width:228px;padding:6px;border-radius:12px;background:var(--raise);box-shadow:0 0 0 1px var(--line2),0 16px 48px rgba(0,0,0,.55);display:grid;animation:reveal .16s var(--ease)}
+.acct-m{position:absolute;right:0;top:48px;z-index:48;width:228px;padding:6px;border-radius:8px;transform-origin:top right;background:var(--raise);box-shadow:0 0 0 1px var(--line2),0 16px 48px rgba(0,0,0,.55);display:grid;animation:reveal .16s var(--ease)}
 .am-h{display:grid;gap:1px;padding:8px 10px 10px}.am-h b{font:650 15px var(--disp)}
-.acct-m button{display:flex;align-items:center;gap:10px;height:40px;padding:0 10px;border-radius:6px;color:var(--t1);font-weight:600;font-size:14px;text-align:left}
+.acct-m button{display:flex;align-items:center;gap:10px;height:40px;padding:0 10px;border-radius:4px;color:var(--t1);font-weight:600;font-size:14px;text-align:left}
 .acct-m button:hover{background:var(--hover)}.acct-m button svg{color:var(--t2)}
 .acct-m .tether{width:18px;height:18px;margin:0;font-size:11px}
 .acct-m hr{border:0;border-top:1px solid var(--line);margin:6px 4px}
@@ -29,7 +29,7 @@
 @media (max-width:1159px) and (min-width:1024px){.prize{display:none}}
 
 /* ---------- wallet ---------- */
-.wallet{position:absolute;top:72px;left:50%;margin-left:-270px;width:380px;z-index:47;padding:0 20px 20px;border-radius:12px;background:var(--raise);box-shadow:0 0 0 1px var(--line2),0 24px 64px rgba(0,0,0,.6);animation:reveal .2s var(--ease)}
+.wallet{position:absolute;top:72px;left:50%;margin-left:-270px;width:380px;z-index:47;padding:0 20px 20px;border-radius:8px;background:var(--raise);box-shadow:0 0 0 1px var(--line2),0 24px 64px rgba(0,0,0,.6);animation:reveal .2s var(--ease)}
 .wl-h{display:flex;align-items:center;justify-content:space-between;height:60px}.wl-h b{font:650 17px var(--disp)}
 .wl-total{display:grid;gap:2px;padding:14px 16px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line2);background:linear-gradient(120deg,rgba(2,248,248,.07),transparent 60%)}
 .wl-total>b{display:flex;align-items:center;font:700 28px/34px var(--disp)}.wl-total .tether{width:20px;height:20px;font-size:12px}
@@ -158,7 +158,7 @@
 
 @media (max-width:1023px){
   .pt .bal{height:40px}
-  .wallet.sheet{position:fixed;left:0;right:0;top:auto;margin:0;width:auto;height:auto;max-height:86%;overflow:auto;border-radius:20px 20px 0 0;padding:0 20px 20px;z-index:62}
+  .wallet.sheet{position:fixed;left:0;right:0;top:auto;margin:0;width:auto;height:auto;max-height:86%;overflow:auto;border-radius:12px 12px 0 0;padding:0 20px 20px;z-index:62}
   .sx-head{flex-wrap:wrap;gap:12px}.sx-acts{width:100%}.sx-acts .btn{flex:1;justify-content:center;height:44px}
   .sx-top{grid-template-columns:1fr}.sx-hero{border-right:0;border-bottom:1px solid var(--line);padding:20px 0}.sx-hero>b{font-size:44px;line-height:48px}
   .sx-tiles{grid-template-columns:1fr 1fr}.sx-tile{padding:14px 0 14px 16px}
@@ -179,8 +179,8 @@
 .ob-t{display:flex;align-items:center;gap:8px;min-width:0;font:600 15px/22px var(--body)}
 .ob-t b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ob-t .tk-i{color:var(--t3);flex:none;transition:color .16s,transform .16s var(--ease)}
-.ob-h:hover .tk-i,.ob.click:hover .tk-i{color:var(--cyan);transform:translateX(2px)}
-.ob-h:hover .ob-t b{color:var(--cyan)}
+button.ob-h:hover .tk-i,.ob.click:hover .tk-i{color:var(--cyan);transform:translateX(2px)}
+button.ob-h:hover .ob-t b,.ob.click:hover .ob-t b{color:var(--cyan)}
 .ob-live{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--line2);font:600 12px var(--body);white-space:nowrap}
 .ob-live .dot{margin-right:0}.ob-live b{font-weight:700}.ob-live span.d{color:var(--t2)}
 .ob-m{grid-column:1/-1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -190,7 +190,7 @@
 .ob-nums b{font:650 15px/20px var(--disp)}.ob-nums b.zero{color:var(--t2)}
 .ob-cash{display:grid;gap:8px}
 .ob-v{display:flex;align-items:center;justify-content:space-between}
-.ob-v .pc{font-size:11px;padding:2px 6px}
+.ob-v .pc{padding:2px 6px}
 .ob .co-wrap{width:100%;justify-items:stretch;text-align:left}
 .ob .co{width:100%;height:44px;justify-content:space-between;padding:0 16px}
 .ob .co .co-v{font-size:16px}
@@ -244,7 +244,7 @@ button.tkt-stub:hover{background:rgba(2,248,248,.1)}button.tkt-stub:hover .tkt-o
 .tkt .co.go,.tkt .co:disabled{justify-content:center}
 .tkt .co.x{width:44px;flex:none;padding:0;justify-content:center}
 .tkt .co-wrap.done{justify-items:start}.tkt .co-wrap.done .ripple{right:auto;left:8px}
-.tkt.new{animation:tktnew 2.4s var(--ease)}
+.tkt.new{animation:tktnew 1.6s var(--ease)}
 @keyframes tktnew{from{box-shadow:inset 0 0 0 1.5px var(--cyan)}}
 /* settled tickets: one row, the stub tinted by the result */
 .tkt.settled{margin-top:8px;cursor:pointer;transition:background .16s}
@@ -278,9 +278,9 @@ button.tkt-stub:hover{background:rgba(2,248,248,.1)}button.tkt-stub:hover .tkt-o
 @media (max-width:1279px){.tkt-nums div{min-width:92px;padding:0 14px}.tkt .co-wrap{width:210px}.tkt{grid-template-columns:116px minmax(0,1fr)}}
 
 /* ---------- nothing floats: the sports nav is one bar, and small notes sit in tags ---------- */
-.snav{display:flex;align-items:center;gap:4px;margin-top:12px;padding:4px;border-radius:10px;background:var(--cellbg);box-shadow:inset 0 0 0 1px var(--line);overflow-x:auto;scrollbar-width:none}
+.snav{display:flex;align-items:center;gap:4px;margin-top:12px;padding:4px;border-radius:12px;background:var(--cellbg);box-shadow:inset 0 0 0 1px var(--line);overflow-x:auto;scrollbar-width:none}
 .snav::-webkit-scrollbar{display:none}
-.snav button{display:flex;align-items:center;gap:8px;height:36px;padding:0 13px;border-radius:7px;color:var(--t2);font:600 14px var(--body);white-space:nowrap;flex:none;transition:color .16s,background .16s}
+.snav button{display:flex;align-items:center;gap:8px;height:36px;padding:0 13px;border-radius:8px;color:var(--t2);font:600 14px var(--body);white-space:nowrap;flex:none;transition:color .16s,background .16s}
 .snav button svg{flex:none;color:var(--t3);transition:color .16s}
 .snav button:hover{color:var(--t1);background:var(--hover)}.snav button:hover svg{color:var(--t2)}
 .snav button.on{color:var(--t1);background:rgba(2,248,248,.1);box-shadow:inset 0 0 0 1px rgba(2,248,248,.32)}
@@ -289,18 +289,19 @@ button.tkt-stub:hover{background:rgba(2,248,248,.1)}button.tkt-stub:hover .tkt-o
 .snav .sep{width:1px;height:20px;background:var(--line2);margin:0 6px;flex:none}
 .snav .end{margin-left:auto}.snav .end svg{color:var(--gold)}
 /* counts and notes beside a heading become small tags */
-.h small,.title small{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:5px;box-shadow:inset 0 0 0 1px var(--line2);background:var(--cellbg);font:600 12px/1 var(--body);letter-spacing:0;color:var(--t2);align-self:center}
+.h small,.title small{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--line2);background:var(--cellbg);font:600 12px/1 var(--body);letter-spacing:0;color:var(--t2);align-self:center}
 .h small .dot{margin-right:5px}
-.tag{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;border-radius:5px;box-shadow:inset 0 0 0 1px var(--line2);background:var(--cellbg);font:600 12px/1 var(--body);color:var(--t2);white-space:nowrap;cursor:default}
+.tag{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--line2);background:var(--cellbg);font:600 12px/1 var(--body);color:var(--t2);white-space:nowrap;cursor:default}
 .tag.tip .tt{left:auto;right:0;top:32px;font-weight:500}
 .tag.tip:focus .tt{display:block}
-.sh .all a,.sh .all button{height:28px;padding:0 10px;border-radius:6px;box-shadow:inset 0 0 0 1px var(--line2);transition:color .16s,box-shadow .16s,background .16s}
+.sh .all a,.sh .all button{position:relative;height:28px;padding:0 10px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line2);transition:color .16s,box-shadow .16s,background .16s}
 .sh .all a:hover,.sh .all button:hover{background:var(--hover);box-shadow:inset 0 0 0 1px var(--line3)}
 @media (max-width:1023px){
   .snav{margin:12px -16px 0;border-radius:0;box-shadow:inset 0 1px 0 var(--line),inset 0 -1px 0 var(--line);padding:4px 16px}
   .snav button{height:40px;padding:0 12px}
   .snav .end{margin-left:0}
-  .sh .all a,.sh .all button{height:36px}
+  /* 36px to look at, 44px to tap: the hit area grows without changing the heading row */
+  .sh .all a,.sh .all button{height:36px}.sh .all a:after,.sh .all button:after{content:"";position:absolute;inset:-4px 0}
   .tag{height:28px}
 }
 .snav+.title{margin-top:22px}
@@ -314,9 +315,9 @@ button.tkt-stub:hover{background:rgba(2,248,248,.1)}button.tkt-stub:hover .tkt-o
 .snav .skey kbd{font:600 11px var(--body);padding:2px 7px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--line2);color:var(--t3)}
 .snav .skey:hover{background:rgba(4,16,21,.9);box-shadow:inset 0 0 0 1px var(--line3);color:var(--t1)}
 .snav .fol svg{color:var(--gold)}
-.so-box.anch{border-radius:10px;max-height:min(640px,calc(100% - 140px));animation:sogrow .22s var(--ease)}
+.so-box.anch{border-radius:8px;max-height:min(640px,calc(100% - 140px));animation:sogrow .22s var(--ease)}
 .so-box.anch .search.big{height:44px;padding:0 14px}
-@keyframes sogrow{from{clip-path:inset(0 0 calc(100% - 44px) 0 round 10px)}to{clip-path:inset(0 round 10px)}}
+@keyframes sogrow{from{clip-path:inset(0 0 calc(100% - 44px) 0 round 8px)}to{clip-path:inset(0 round 8px)}}
 @media (max-width:1279px) and (min-width:1024px){.maincol>.snav{margin:10px 20px 0}.snav .skey{width:44px;max-width:none;padding:0;justify-content:center}.snav .skey span,.snav .skey kbd{display:none}}
 @media (max-width:1023px){
   .phone>.snav{margin:0;flex:none}
@@ -332,7 +333,7 @@ button.tkt-stub:hover{background:rgba(2,248,248,.1)}button.tkt-stub:hover .tkt-o
 .plate.tn .s{color:var(--t2)}.plate.tn .s.hi{color:var(--t1)}
 .plate.tn .g.lo{color:var(--t2)}.plate.tn .g:not(.cur){color:var(--t2)}.plate.tn .g:not(.cur):not(.lo){color:var(--t1)}
 .plate.tn .p{min-width:32px;background:rgba(2,248,248,.1);color:var(--mint)}
-.plate.tn .hd{font:600 10px/20px var(--body);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:var(--t2);text-align:center;padding:0 8px;border-bottom:1px solid var(--line)}
+.plate.tn .hd{font:600 11px/20px var(--body);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:var(--t2);text-align:center;padding:0 8px;border-bottom:1px solid var(--line)}
 .plate.tn .hd+.hd{border-left:1px solid var(--line)}
 .plate.tn.full{border-radius:8px}
 .plate.tn.full>span{height:42px!important;min-width:52px;font-size:22px!important}
@@ -352,8 +353,8 @@ button.tkt-stub:hover{background:rgba(2,248,248,.1)}button.tkt-stub:hover .tkt-o
 @media (max-width:1023px){.snav .skey{flex:none;min-width:0;margin:0 4px 0 0}}
 /* when the bar is tight, search stays as an icon key at the end */
 @media (max-width:1399px) and (min-width:1024px){
-  .desk:not(.panel-closed) .snav .skey,.desk.rail-open .snav .skey{flex:0 0 44px;min-width:0;width:44px;padding:0;justify-content:center;margin-left:auto}
-  .desk:not(.panel-closed) .snav .skey span,.desk:not(.panel-closed) .snav .skey kbd,.desk.rail-open .snav .skey span,.desk.rail-open .snav .skey kbd{display:none}
+  .desk:not(.panel-closed) .snav .skey{flex:0 0 44px;min-width:0;width:44px;padding:0;justify-content:center;margin-left:auto}
+  .desk:not(.panel-closed) .snav .skey span,.desk:not(.panel-closed) .snav .skey kbd{display:none}
 }
 @media (max-width:1339px) and (min-width:1024px){.desk:not(.panel-closed) .snav button{padding:0 9px;gap:6px}.desk:not(.panel-closed) .snav .sep{margin:0 2px}.desk:not(.panel-closed) .snav .skey{padding:0;flex-basis:40px;width:40px}}
 /* the bar is back inside Sports home and Live; other pages carry a search key in their own controls */
@@ -365,9 +366,9 @@ button.tkt-stub:hover{background:rgba(2,248,248,.1)}button.tkt-stub:hover .tkt-o
 @media (max-width:1023px){.skey-i{width:44px;height:44px}.filters .skey-i{width:40px;height:40px}.page>.snav:first-child{margin-top:-4px}}
 
 /* ---------- bet slip selections use the same ticket as My bets: the bet above the tear, the stake below it ---------- */
-.slipc{animation:cardin .24s var(--ease)}
+.slipc{animation:cardin var(--d-base) var(--ease)}
 .ob-hr{display:inline-flex;align-items:center;gap:4px}
-.slipc .rm{width:28px;height:28px;display:grid;place-items:center;border-radius:6px;color:var(--t3);margin-right:-6px;transition:color .16s,background .16s}
+.slipc .rm{width:28px;height:28px;display:grid;place-items:center;border-radius:8px;color:var(--t3);margin-right:-6px;transition:color .16s,background .16s}
 .slipc .rm:hover{color:var(--t1);background:var(--hover)}
 .slipc .stk{margin-top:0}
 .slipc .inp{background:rgba(4,16,21,.55)}
@@ -380,8 +381,8 @@ button.tkt-stub:hover{background:rgba(2,248,248,.1)}button.tkt-stub:hover .tkt-o
 @media (max-width:1023px){.slipc .rm{width:40px;height:40px;margin-right:-10px}}
 
 /* the live bets strip folds away on My bets and unfolds on the way out */
-.strip{overflow:hidden;transition:height .36s var(--ease-move),opacity .22s ease,border-color .36s ease}
-.strip>*{transition:transform .36s var(--ease-move),opacity .2s ease}
+.strip{overflow:hidden;transition:height var(--d-large) var(--ease-move),opacity .22s ease,border-color var(--d-large) ease}
+.strip>*{transition:transform var(--d-large) var(--ease-move),opacity .2s ease}
 .strip.off{height:0;opacity:0;border-bottom-color:transparent;pointer-events:none}
 .strip.off>*{transform:translateY(-14px);opacity:0}
 @media (max-width:1023px){.phone:has(.strip.off) .stick{top:56px}}
@@ -410,4 +411,60 @@ button.tkt-stub:hover{background:rgba(2,248,248,.1)}button.tkt-stub:hover .tkt-o
   .row{grid-template-columns:minmax(0,1fr) auto;min-height:0}
   .row .px{gap:8px}
   .row .px .cell{height:54px;padding:0 12px}
+}
+
+/* =====================================================================================================================
+   A1 foundation (polish round): exits, skip link and scroll padding, touch hit areas, focus inside clipping parents,
+   reduced motion. Shared rules only; nothing here belongs to one page.
+   ===================================================================================================================== */
+
+/* ---------- exits: every overlay that animates in also animates out, shorter, on the accelerate curve ----------
+   usePresence(open, EXIT.x) in ui.tsx keeps the node mounted while it leaves; add the class `is-closing` while `closing`.
+   sheet + its scrim 200 ms (EXIT.sheet) · bet card + its scrim 160 ms (EXIT.dialog) · popovers 100 ms (EXIT.pop).
+   Toasts need no JS: they fade over the last 150 ms of --toast-life (see .toast in styles.css). */
+@keyframes fadeout{to{opacity:0}}
+@keyframes sheetout{to{transform:translateY(100%)}}
+.sheet.is-closing,.wallet.sheet.is-closing{animation:sheetout .2s var(--ease-exit) forwards;pointer-events:none}
+.scrim.is-closing{animation:fadeout .2s var(--ease-exit) forwards;pointer-events:none}
+.card-w.is-closing{animation:fadeout .16s var(--ease-exit) forwards;pointer-events:none}
+.card-ov .scrim.is-closing{animation-duration:.16s}
+.popv.is-closing,.acct-m.is-closing,.wallet.is-closing,.scenes-pop.is-closing,.so-box.is-closing{animation:fadeout .1s var(--ease-exit) forwards;pointer-events:none}
+.toast.is-closing,.x-fade{animation:fadeout var(--d-quick) var(--ease-exit) forwards;pointer-events:none}
+
+/* ---------- skip link (the element belongs to the shell: first child of .desk and .phone) and scroll padding ---------- */
+.skip-link{position:absolute;left:8px;top:8px;z-index:90;display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:8px;background:var(--mint);color:var(--ink);font:700 14px var(--disp);transform:translateY(-64px);transition:transform var(--d-quick) var(--ease)}
+.skip-link:focus,.skip-link:focus-visible{transform:none;outline-offset:2px}
+.main{scroll-padding:64px 0 24px}
+main:focus{outline:0}
+@media (max-width:1023px){html{scroll-padding-top:120px;scroll-padding-bottom:140px}}
+
+/* ---------- focus ring inside parents that clip: drawn inside the control ---------- */
+.mk .cell:focus-visible,.strip-b:focus-visible,.snav button:focus-visible,.slates .cell:focus-visible{outline-offset:-2px}
+
+/* ---------- phone touch targets: the hit area grows, the layout does not move ---------- */
+.ptabs .x{width:44px;margin-right:-12px;justify-content:center}
+@media (max-width:1023px){
+  .tstar,.chip button,.qs button{position:relative}
+  .tstar:after{content:"";position:absolute;inset:0 -8px}
+  .chip button:after{content:"";position:absolute;inset:0 -6px}
+  .qs button:after{content:"";position:absolute;inset:-2px 0}
+  .card-acts .btn{height:44px}
+  .sbar.slim{height:44px}
+  .fchips .lnk{height:40px;padding:0 14px}
+}
+
+/* ---------- reduced motion: short fades stay, travel, scale, draw and rings go ---------- */
+@media (prefers-reduced-motion:reduce){
+  .fade,.reveal,.line,.rc,.slipc,.yb,.sbar,.sheet,.scrim,.card-w,.strip-in,.popv,.acct-m,.wallet,.so-box,.scenes-pop,.mini-score,.goalcap,.goalnote,.banner,.co.go{
+    animation-name:fade!important;animation-duration:.15s!important;animation-timing-function:ease-out!important}
+  .toast,.toasts.top .toast{animation:fade .15s ease-out,fadeout .15s ease-in calc(var(--toast-life) - .15s) forwards!important}
+  .sheet.is-closing,.scrim.is-closing,.card-w.is-closing,.popv.is-closing,.acct-m.is-closing,.wallet.is-closing,.scenes-pop.is-closing,.so-box.is-closing,.toast.is-closing,.x-fade{animation-name:fadeout!important;animation-duration:.1s!important}
+  .ripple,.tint{display:none}
+  .land,.count-in,.starin{animation:none!important}
+  /* a goal still shows on the board: the thin edge holds, then goes (opacity only) */
+  .board.goal .sb-score:after{animation-duration:1.6s!important}
+  /* press: no scale, a change of tone instead */
+  :is(.ib,.btn,.cell,.chip,.co,.place,.sbar,.acc,.qs button):active{transform:none!important}
+  :is(.ib,.btn:not(.pri),.chip,.qs button):active:not(:disabled){background-color:var(--press)}
+  :is(.place,.btn.pri,.co.go,.sbar):active:not(:disabled):not([aria-disabled=true]){filter:brightness(.94)}
 }

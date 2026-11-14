@@ -8,6 +8,7 @@ import { Match } from './match'
 import { Stats } from './stats'
 import { Wallet } from './account'
 import { BetCard, BetStrip } from './betcard'
+import { FIXTURES } from './data'
 import type { Sport } from './data'
 import { MenuSheet, Panel, PhoneHeader, Rail, ScenesPop, SearchOverlay, Sheet, SlipBar, TabBar, Toasts, TopBar, useShell } from './shell'
 import { cx, useIsPhone } from './ui'
@@ -24,6 +25,9 @@ function Frame() {
   const main = useRef<HTMLElement>(null)
   const shell = useShell()
   useEffect(() => { main.current?.scrollTo(0, 0); window.scrollTo(0, 0) }, [loc])
+  // which sport the rail lights: the sport page itself, or the sport of the match being looked at
+  const railSport = loc === '/football' ? 'football' : loc.startsWith('/sport/') ? loc.slice(7) : loc.startsWith('/match/') ? FIXTURES.find((f) => f.id === loc.slice(7))?.sport ?? null : null
+  const skip = <a className="skip-link" href="#main" onClick={(e) => { e.preventDefault(); main.current?.focus() }}>Skip to content</a>
   const routes = (
     <Switch>
       <Route path="/" component={Home} />
@@ -39,9 +43,10 @@ function Frame() {
   if (phone)
     return (
       <div className="phone">
+        {skip}
         <PhoneHeader />
         <BetStrip />
-        <main ref={main} key={loc} className="main fade">{routes}</main>
+        <main ref={main} key={loc} id="main" tabIndex={-1} className="main fade">{routes}</main>
         <SlipBar />
         <Sheet />
         <MenuSheet />
@@ -55,12 +60,12 @@ function Frame() {
     )
   return (
     <div className={cx('desk', shell.rail && 'rail-open', !shell.panel && 'panel-closed')}>
+      {skip}
       <TopBar />
-      <Rail sport={loc.startsWith('/sport/') ? loc.slice(7) : null} />
-      <div className="maincol"><BetStrip /><main ref={main} className="main"><div key={loc} className="fade">{routes}</div></main></div>
+      <Rail sport={railSport} />
+      <div className="maincol"><BetStrip /><main ref={main} id="main" tabIndex={-1} className="main"><div key={loc} className="fade">{routes}</div></main></div>
       <Panel />
       <ScenesPop />
-      <Wallet />
       <BetCard />
       <SearchOverlay />
       <Toasts />
@@ -70,19 +75,23 @@ function Frame() {
 
 export function App() {
   useEffect(() => {
-    const t = setInterval(tick, 1000)
+    // deep links for reviewers, e.g. #/match/ars-bha?scene=goal
+    const params = new URLSearchParams(window.location.hash.split('?')[1] ?? '')
+    // ?freeze=1 holds the book still (no price moves, no scripted events), so two screenshots of one page can be compared
+    const frozen = params.get('freeze') === '1'
+    const t = frozen ? 0 : window.setInterval(tick, 1000)
     // a little story plays by itself, so the states show without any setup
-    const timers = [
+    const timers = frozen ? [] : [
       setTimeout(() => suspendMarket('ars-bha:tc', 'Corner check', 6000), 20000),
       setTimeout(() => { if (!useBook.getState().matches['ars-bha'].pause) suspendMatch('ars-bha', 'Penalty check', 7000) }, 75000),
     ]
-    // deep links for reviewers, e.g. #/match/ars-bha?scene=goal
-    const params = new URLSearchParams(window.location.hash.split('?')[1] ?? '')
     const scene = params.get('scene')
     if (params.get('rail') === 'open') useShell.setState({ rail: true })
     if (params.get('panel') === 'closed') useShell.setState({ panel: false })
     if (params.get('panel') === 'bets') useApp.getState().set(window.matchMedia('(max-width: 1023px)').matches ? { sheet: 'bets' } : { panelTab: 'bets' })
-    if (scene === 'demo') timers.push(setTimeout(() => useApp.getState().set(window.matchMedia('(max-width: 1023px)').matches ? { menu: true } : { scenes: true }), 400))
+    // on the phone the demo controls live in the Menu: the link opens it with them unfolded
+    if (scene === 'demo') timers.push(setTimeout(() => { const ph = window.matchMedia('(max-width: 1023px)').matches; if (ph) useShell.setState({ demo: true }); useApp.getState().set(ph ? { menu: true } : { scenes: true }) }, 400))
+    if (scene === 'search') timers.push(setTimeout(() => useApp.getState().set({ search: true }), 400))
     if (scene === 'goal') timers.push(setTimeout(() => scoreGoal('ars-bha', 0), 1500))
     if (scene === 'lull') useBook.getState().set({ lull: true })
     if (scene === 'fail') useApp.getState().set({ failNext: true })

@@ -1,0 +1,112 @@
+/* Polish round: slip owner. Loaded after styles-account.css, so rules here win. */
+
+/* ---- slip card -------------------------------------------------------------------------------------------- */
+.ob,.tkt{overflow:clip} /* the tear notches overflow the ticket; clip (unlike hidden) cannot be scrolled by focus or a programmatic scroll */
+.ob-nums{margin:0}
+.ob-nums b{display:flex;align-items:center;height:20px} /* the rolling Odds figure sits on the same line as the others */
+.slipc .inp:not(:focus-within):not(.bad){box-shadow:inset 0 0 0 1px rgba(128,231,254,.42)}
+.slipc .line.sus .d{color:var(--t1)}
+.slipc .chg svg{flex:none;color:var(--t2)}
+.slipc-bad{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.slipc-bad button{color:var(--cyan);font-weight:700;white-space:nowrap}
+.qs{gap:8px}.qs button{height:32px;border-radius:8px}
+.ph{align-items:center}.ph button{padding:6px 0 6px 12px;margin:-6px 0}
+
+/* ---- slip footer: one table (stake, return, balance, price setting), then the one button ------------------ */
+.pf{position:relative}
+.tot{min-height:24px}
+.tot b{font:650 16px/24px var(--disp);display:inline-flex;align-items:center;height:24px}
+.tot number-flow-react{line-height:24px}
+.tot b.pf-out{font:600 13px/24px var(--body);color:var(--t2)}
+.hold .d{display:inline-flex;align-items:center}
+.pf-mv{gap:5px}.pf-mv s{color:var(--t2)}.pf-mv b{color:var(--t1);font-weight:650}.pf-mv svg{color:var(--t2)}
+.pf-pref .prefw>button{font:600 13px/24px var(--body);gap:4px}
+.pf-pref .popv{left:auto;right:0;bottom:calc(100% + 6px);transform-origin:bottom right}
+.place[aria-busy=true]{cursor:progress}.place[aria-busy=true] .bar{opacity:.35}
+.pf .racts{padding:0;margin-top:4px}.pf .racts .btn{height:48px;font-size:14px}
+/* phone keyboard up: only what the stake needs (return and the button) */
+.pf.kb{padding-top:8px;padding-bottom:8px}
+.pf.kb .fine,.pf.kb .pf-pref,.pf.kb .pf-bal,.pf.kb .tot:first-child{display:none}
+
+/* ---- receipt: one heading for the batch, one compact row per bet ------------------------------------------ */
+.rcp-h{position:relative;display:flex;align-items:center;gap:10px;padding:14px 0 12px;animation:reveal var(--d-base) var(--ease)}
+.rcp-h b{font:650 16px/22px var(--disp)}
+.rcp-h .meta{margin-left:auto}
+.rcp-r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;padding:12px 0;border-top:1px solid var(--line);animation:reveal var(--d-base) var(--ease)}
+.rcp-a{display:grid;gap:2px;justify-items:start;min-width:0}
+.rcp-a b{font:600 14px/20px var(--body)}
+.rcp-b{display:grid;gap:2px;justify-items:end;align-content:start;text-align:right;white-space:nowrap}
+.rcp-b b{display:inline-flex;align-items:center;font:650 14px/20px var(--disp)}
+.rcp-b .tether{width:15px;height:15px;font-size:9px;margin-right:5px}
+.rcp-b .meta .d{color:var(--t1);font-weight:600}
+.rcp-id{display:inline-flex;align-items:center;gap:6px;margin-top:4px;font-size:12px;letter-spacing:.04em}
+.receipts .racts{border-top:1px solid var(--line)}
+
+/* ---- cash out: one button and one note line, the same footprint in every state ---------------------------- */
+.co-wrap{align-content:start}
+.ob .co-wrap:not(.co-off),.tkt .co-wrap:not(.co-off){min-height:66px} /* 44 button + 6 + 16 note */
+.tkt-cash{align-items:flex-start}
+.co{position:relative;overflow:hidden}
+.co[aria-disabled=true],.ob .co[aria-disabled=true],.tkt .co[aria-disabled=true]{color:var(--t2);cursor:default;justify-content:center}
+@media (hover:hover){.co[aria-disabled=true]:hover{background-color:transparent;box-shadow:inset 0 0 0 1px var(--line2)}}
+.co-drain{position:absolute;left:0;bottom:0;width:100%;height:3px;background:var(--ink);opacity:.35;transform-origin:left;animation:drain 5s linear forwards}
+.co-note{display:block;min-height:16px;text-align:left}
+.co-note em{font:600 12px/16px var(--disp);font-style:normal;font-variant-numeric:tabular-nums}
+.co-note em.u{color:var(--up)}.co-note em.dn{color:var(--down)}
+.co-rel{color:var(--cyan);font-weight:600;position:relative}
+.co-rel:after{content:"";position:absolute;inset:-2px -12px -26px} /* a bigger target that grows downward only, never over Confirm */
+.co-wrap.done b{min-height:44px}
+.co-wrap.done .ripple,.ob .co-wrap.done .ripple,.tkt .co-wrap.done .ripple{left:8px;right:auto;top:22px}
+.co-wrap.done .ripple:before{width:36px;height:36px;left:-18px;top:-18px} /* stays inside the ticket edge */
+
+/* ---- tickets ---------------------------------------------------------------------------------------------- */
+/* number columns are fixed tracks, so dividers line up from ticket to ticket whatever the figures are */
+.tkt-nums{display:grid;grid-template-columns:96px 128px 144px}
+.tkt-nums div{min-width:0;padding:0 0 0 20px}
+/* the result of a settled bet sits in the chip slot the live score has on an open ticket */
+.tkt .res,.ob .res{height:24px;padding:0 8px;border-radius:4px;gap:5px;font:600 12px var(--body);color:var(--t2);box-shadow:inset 0 0 0 1px var(--line2)}
+.tkt.settled .res{min-width:0}
+.tkt .res.won,.ob .res.won{color:var(--up);box-shadow:inset 0 0 0 1px rgba(61,220,151,.55)}
+.tkt .res.won svg,.ob .res.won svg{color:var(--up)}
+.tkt .res.cashed,.ob .res.cashed{color:var(--t1);box-shadow:inset 0 0 0 1px rgba(196,244,241,.45)}
+.tkt .res.void,.ob .res.void{box-shadow:none;outline:1px dashed var(--line3);outline-offset:-1px}
+
+/* ---- My bets header and totals ---------------------------------------------------------------------------- */
+.mb-top{min-height:40px}
+.mb-sum div{grid-template-rows:16px 22px;width:136px}
+.mb-sum div:first-child{width:76px}
+.mb-sum b{height:22px;line-height:22px}
+.mb-sum number-flow-react{line-height:22px}
+.mb-sum b.u{color:var(--up)}.mb-sum b.dn{color:var(--down)}
+/* side panel and phone sheet: the same four cells in one row under the tabs */
+.mybets:not(.wide) .mb-sum{display:grid;grid-template-columns:auto 1fr 1fr 1fr;padding:12px 0;border-bottom:1px solid var(--line)}
+.mybets:not(.wide) .mb-sum div,.mybets:not(.wide) .mb-sum div:first-child{width:auto;margin-left:0;padding-left:12px}
+.mybets:not(.wide) .mb-sum div:first-child{padding-left:0;padding-right:12px}
+.mybets:not(.wide) .mb-sum b{font-size:15px}
+.mybets:not(.wide) .mb-sum .tether{display:none}
+/* narrow: the range chips wrap, so none is cut and the sport select is never off screen */
+.mybets:not(.wide) .mb-head .filters{flex-wrap:wrap;overflow:visible;margin-right:0;padding-right:0;-webkit-mask-image:none;mask-image:none}
+.empty .btn{margin-top:10px}
+
+@media (max-width:1279px){.tkt-nums{grid-template-columns:84px 112px 128px}.tkt-nums div{padding:0 0 0 14px}}
+@media (max-width:1023px){
+  .qs button{height:44px}
+  .ph button{padding:12px 0 12px 12px;margin:-12px 0}
+  .slipc-bad button{padding:12px 0 12px 12px;margin:-12px 0}
+  .rcp-id{padding:10px 12px 10px 0;margin:-4px 0 -10px}
+  .pf .racts .btn{height:48px}
+}
+@media (prefers-reduced-motion:reduce){
+  .rcp-h,.rcp-r{animation:none}
+  .co-drain{animation:drain 5s steps(5) forwards!important}
+}
+
+/* ---- fix round -------------------------------------------------------------------------------------------- */
+/* a suspension counts down in the same figures as the list rows ("22s") */
+.slipc .line.sus .cd,.co-note .cd{font-weight:600;color:var(--t1)}
+/* wide ticket: the market and match line wraps to a second line instead of being cut */
+.tkt-sel .meta{white-space:normal;overflow:visible;text-overflow:clip;text-wrap:balance}
+/* an open ticket keeps its 76px top row when that line wraps (22 + 2 + 32 + 2 x 10) */
+.tkt:not(.settled) .tkt-top{padding-top:10px;padding-bottom:10px}
+/* totals row: the rolling "Value now" figure takes the same 22px line as the plain figures beside it (it sat 1px high) */
+.mb-sum number-flow-react{--number-flow-char-height:22px}

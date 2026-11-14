@@ -1,0 +1,32 @@
+/* Polish round: stats owner. Loaded after styles-account.css, so rules here win. */
+
+/* b6-stats: record page fixes (audit stats-01, -05, -21, -22). */
+.sx-filters{margin:16px 0 0}
+/* stats-05: every tile label sits 20px under its top rule; rows share one height */
+.sx-tiles{grid-auto-rows:1fr}
+.sx-tile{align-content:start;padding:20px 0 20px 24px}
+.sx-hero{align-content:start;padding-top:20px}
+/* stats-22: counts drawn as thin cyan lines, not bars */
+.sx-row .trk{height:4px}
+.sx-row .trk u{border-radius:0 2px 2px 0}
+.sx-row.meter .trk{background:rgba(2,248,248,.12);border-radius:0 2px 2px 0}
+.sx-row.meter>.meta{white-space:nowrap}
+/* stats-21: last ten bets in one row */
+.sx-form{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;padding:16px 0 8px}
+.sx-form button{width:auto;height:36px;border-radius:8px}
+.sx-form button.lost,.sx-form button.void{box-shadow:inset 0 0 0 1px rgba(128,231,254,.34)}
+@media (max-width:1023px){
+  /* stats-01: the row fits 358px with 44px targets; below 360 the select and search wrap */
+  .filters.sx-filters{margin:16px 0 0;padding:0 0 16px;overflow:visible;flex-wrap:wrap;-webkit-mask-image:none;mask-image:none}
+  .sx-filters .chip{height:44px;padding:0 10px}
+  .sx-filters .skey-i{width:44px;height:44px}
+  .sx-filters .chip.sel{gap:4px}
+  /* stats-23: no market name cut on the phone (the odds rows keep their wider last column) */
+  .sx-row:not(.meter){grid-template-columns:132px minmax(0,1fr) 28px 64px}
+  .sx-sec:not(:has(.meter)) .sx-h .cols{grid-template-columns:28px 64px}
+  .sx-tile{padding:16px 0 16px 16px}
+  .sx-hero{padding-top:20px}
+  .sx-form button{height:44px}
+  /* notes stay on the heading line (all are short now) */
+  .sx-h{flex-wrap:nowrap}.sx-h .meta:not(.cols){margin-left:auto;text-align:right;width:auto;white-space:nowrap}
+}

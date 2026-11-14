@@ -1,0 +1,152 @@
+/* Polish round: shell owner. Loaded after styles-account.css, so rules here win. */
+
+/* ---------- headings for the outline, focus target ---------- */
+.sh-vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+main:focus,main:focus-visible{outline:0}
+.empty h3{font:650 17px/24px var(--disp);margin-top:8px;color:var(--t1)}
+
+/* ---------- top bar: one hover, one press, one label for icon-only keys ---------- */
+.top .tog{position:relative;width:40px;height:40px;margin:0 12px;border-radius:8px}
+.prizew{gap:12px;z-index:47}
+.ptog svg{transform:scaleX(-1)}
+.avb .av{border-radius:4px}
+.ib,.btn,.top .tog{transition:transform var(--d-quick) var(--ease),background var(--d-quick),box-shadow var(--d-quick),color var(--d-quick)}
+.prize{transition:transform var(--d-quick) var(--ease),background var(--d-quick),box-shadow var(--d-quick)}
+.bal{transition:transform var(--d-quick) var(--ease),box-shadow .16s,background .16s}
+.avb{transition:transform var(--d-quick) var(--ease),box-shadow .16s}
+.rail button{transition:transform var(--d-quick) var(--ease),color .16s,background .16s}
+.tb button{transition:transform var(--d-quick) var(--ease),color .16s}
+@media (hover:hover){
+  .ib:hover,.btn:not(.pri):hover,.prize:hover,.top .tog:hover{background:var(--hover);box-shadow:inset 0 0 0 1px var(--line3);color:var(--t1)}
+  .ib.on:hover{color:var(--cyan)}
+  .btn.pri:hover{filter:brightness(1.06)}
+}
+:is(.prize,.bal,.avb,.top .tog,.rail button,.tb button):active{transform:scale(.97)}
+.top [data-tip]{position:relative}
+.top [data-tip]:after{content:attr(data-tip);position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);z-index:60;height:28px;padding:0 10px;border-radius:8px;background:var(--raise);box-shadow:0 0 0 1px var(--line2);font:600 12px/28px var(--body);color:var(--t1);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity var(--d-quick) var(--ease)}
+.top .tog[data-tip]:after{left:0;transform:none}
+.top [data-tip]:focus-visible:after{opacity:1;transition-delay:.12s}
+@media (hover:hover){.top [data-tip]:hover:after{opacity:1;transition-delay:.12s}}
+
+/* the wallet hangs from the balance button, the account menu from the avatar: same drop, on the bar's bottom edge */
+.balw{position:relative;display:flex}
+.balw>.wallet{left:0;top:calc(100% + 12px);margin-left:0;transform-origin:top left}
+.acct-m{top:calc(100% + 12px)}
+
+/* ---------- rail ---------- */
+.desk{--railcol:var(--railw)}
+.rail-open .rail .ld{min-width:18px;height:18px;padding:0 5px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--live)}
+.rail-open .rail .ld b{font:700 11px/18px var(--disp);text-align:center}
+.rail-tip{position:absolute;left:62px;z-index:26;height:28px;padding:0 10px;border-radius:8px;background:var(--raise);box-shadow:0 0 0 1px var(--line2);font:600 12px/28px var(--body);color:var(--t1);white-space:nowrap;pointer-events:none;animation:fade var(--d-quick) var(--ease) .12s both}
+/* below 1680 the open rail lies over the page instead of pushing it: nothing in the page reflows or gets cut */
+@media (min-width:1024px) and (max-width:1679px){
+  .desk{grid-template-columns:64px minmax(0,1fr) auto;--railcol:64px}
+  .desk>.rail{position:absolute;left:0;top:64px;bottom:0;z-index:25;background:var(--bg);transition:width var(--d-large) var(--ease),box-shadow var(--d-base) var(--ease)}
+  .desk>.maincol{grid-column:2;grid-row:2}
+  .desk>.panel{grid-column:3;grid-row:2}
+  .desk.rail-open>.rail{box-shadow:1px 0 0 var(--line2),24px 0 48px rgba(0,0,0,.45)}
+}
+
+/* ---------- side panel ---------- */
+.panel-in{position:relative;width:359px}
+@media (max-width:1279px) and (min-width:1024px){.panel-in{width:319px}}
+.ptabs-l{display:flex;gap:22px;align-items:flex-end;align-self:stretch}
+.pan-all{display:block;width:100%;margin-top:14px}
+/* under 1200 the panel opens over the page, so the page keeps its width */
+@media (min-width:1024px) and (max-width:1199px){
+  .desk{--panelw:0px}
+  .desk>.panel{grid-column:auto;grid-row:auto;position:absolute;right:0;top:64px;bottom:0;width:320px;z-index:24;box-shadow:-24px 0 48px rgba(0,0,0,.45)}
+  .desk.panel-closed>.panel{width:0;box-shadow:none}
+}
+/* demo controls: a layer of the panel, from the tab row to the footer */
+.panel .scenes-pop{position:absolute;inset:56px 0 36px 0;width:auto;max-height:none;border-radius:0;box-shadow:none;padding:0 20px 14px;z-index:3}
+.panel .scenes-pop:not(.is-closing){animation:fade var(--d-quick) var(--ease)}
+.scenes-pop:focus{outline:0}
+.sp-h{align-items:center;height:52px;padding:0}
+.sp-h button{width:32px;height:32px;margin:0 -8px 0 auto;display:grid;place-items:center;border-radius:8px}
+@media (hover:hover){.sp-h button:hover{background:var(--hover);color:var(--t1)}}
+.scenes-pop .scenes-list .micro.sub:first-child{padding-top:4px}
+
+/* ---------- search ---------- */
+.so-box{left:calc(var(--railcol,64px) + (100% - var(--railcol,64px) - var(--panelw,0px) - min(680px,100% - 24px))/2);transform:none}
+.so-box:focus{outline:0}
+.search-ov.is-closing{pointer-events:none}
+.search-ov .scrim.is-closing{animation-duration:.1s}
+.so-x{display:none}
+.so-try{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:16px 0 6px}
+.so-try .micro{margin-right:4px}
+.so-note{padding:16px 0 0}.so-note b{color:var(--t1);font-weight:600}
+.so-row.act{background:var(--hover);box-shadow:-16px 0 0 var(--hover),16px 0 0 var(--hover)}
+@media (hover:hover){.so-row:hover{background:var(--hover);box-shadow:-16px 0 0 var(--hover),16px 0 0 var(--hover)}}
+.so-row.m{padding:8px 0}
+.so-row .px{width:330px}
+.so-row .px.two{width:217px}
+.so-row .px.one{width:90px}
+.so-row .px:not(.one) .cell{height:52px;align-items:flex-start;gap:2px;padding:0 12px}
+.so-row .px:not(.one) .cell .l{justify-content:flex-start;font:500 12px/15px var(--body);letter-spacing:0;color:var(--t2)}
+.so-row .px:not(.one) .cell .p{font-size:15px;line-height:20px}
+.so-row .px:not(.one) .cell.sel .l>span{color:rgba(196,244,241,.8)}
+
+/* ---------- phone chrome ---------- */
+.sbar{height:auto;min-height:52px;padding-top:7px;padding-bottom:7px}
+.sbar.slim{min-height:0}
+.sbar .txt{display:grid;gap:1px;white-space:normal;overflow:visible;line-height:18px}
+.sbar .txt>b{overflow-wrap:anywhere}
+.sbar-ret{font:600 12px/16px var(--body)}
+.menu-h{display:flex;align-items:center;justify-content:space-between;height:44px;padding:0 7px 0 20px;flex:none;border-bottom:1px solid var(--line2)}
+.menu-h h2{font:650 17px var(--disp)}
+.menu-h button{width:44px;height:44px;display:grid;place-items:center;border-radius:8px;color:var(--t2)}
+.sheet.menu:has(.menu-h){max-height:calc(100% - 120px)}
+.sheet.menu .about{padding:12px 0 4px}
+.sheet .scroll,.sheet .pb,.wallet.sheet,.so-res{overscroll-behavior:contain}
+.wallet:focus{outline:0}
+@media (min-width:1024px){.toasts{gap:4px}}
+@media (max-width:1023px){
+  .pt .ib{width:44px;height:44px}
+  .so-box{left:12px;right:12px;width:auto;max-height:calc(100% - 96px)}
+  .so-x{display:block;flex:none;height:44px;margin-right:-10px;padding:0 10px 0 12px;font:600 14px var(--body);color:var(--t2)}
+  .so-row .px.two{width:100%}
+  /* a toast sits just above whatever is under it: the tab bar, the slim bar, or the full slip bar. One at a time. */
+  .toasts:not(.top){bottom:calc(76px + env(safe-area-inset-bottom))}
+  .phone:has(.sbar) .toasts:not(.top){bottom:calc(132px + env(safe-area-inset-bottom))}
+  .phone:has(.sbar.slim) .toasts:not(.top){bottom:calc(124px + env(safe-area-inset-bottom))}
+  .toasts .toast:not(:last-child){display:none}
+}
+/* a tablet-width phone layout keeps its sheets a readable width */
+@media (min-width:600px) and (max-width:1023px){.sheet,.wallet.sheet{max-width:520px;margin-left:auto;margin-right:auto}}
+
+@media (prefers-reduced-motion:reduce){
+  :is(.prize,.bal,.avb,.top .tog,.rail button,.tb button):active{transform:none}
+  .rail-tip,.panel .scenes-pop:not(.is-closing){animation:none}
+  .desk>.panel,.desk>.rail{transition:none}
+}
+.acct-m button:focus-visible{outline-offset:-2px}
+.sheet.menu:has(.menu-h) .scroll{padding-bottom:8px}
+
+/* ---------- fix round ---------- */
+/* 1024 to 1679 wide the open rail is a drawer: the page and side panel dim under it, and a press on the dim closes it.
+   The scrim stays visible (catching the release) until its fade has finished, so the press never reaches the page. */
+.desk>.rail-scrim{display:none}
+@media (min-width:1024px) and (max-width:1679px){
+  .desk>.rail-scrim{display:block;position:absolute;left:0;right:0;top:64px;bottom:0;z-index:25;background:rgba(4,16,21,.6);opacity:0;visibility:hidden;transition:opacity var(--d-base) var(--ease),visibility 0s linear var(--d-base)}
+  .desk.rail-open>.rail-scrim{opacity:1;visibility:visible;transition:opacity var(--d-base) var(--ease),visibility 0s}
+}
+@media (prefers-reduced-motion:reduce){.desk>.rail-scrim,.desk.rail-open>.rail-scrim{transition:none}}
+/* the balance figure keeps one width from 980.00 up to 99,999.99 (7ch fits 10,000.00 at 65.8px), so the Wallet button,
+   crown, prize and the phone search icon never shift */
+.bal b{display:inline-block;min-width:7ch;text-align:right}
+
+/* ---------- phone hit areas: 44px to the finger, the drawing unchanged ---------- */
+@media (max-width:1023px){
+  .pt .logo{display:flex;align-items:center;min-height:44px}
+  .pt .bal,.snav button,.wl-h .ib,.slipc .rm,.ph button{position:relative}
+  .pt .bal:before,.snav button:before,.ph button:before{content:"";position:absolute;inset:-2px 0}
+  .wl-h .ib:before,.slipc .rm:before{content:"";position:absolute;inset:-2px}
+  .sheet .ptabs [role=tab]{min-width:44px}
+  /* the unfollow X grows upward only: the chip row scrolls sideways, which clips anything below it */
+  .fchips .chip button:after{inset:-4px -6px 0}
+  /* two stars stacked 22px apart: the home star reaches up over the status line, the away star down toward the
+     prices but stops short of them, so neither takes the other's taps or a price's */
+  .tms .tstar:after{inset:-22px -8px 0}
+  .tms .tm+.tm .tstar:after{inset:0 -8px -10px}
+}
